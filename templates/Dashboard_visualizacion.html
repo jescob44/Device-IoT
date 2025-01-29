@@ -1,0 +1,389 @@
+<!-- Extend flask layout.html -->
+{% extends 'layout4.html' %} {% block content %}
+
+
+
+<!-- Slider que se pueden mostrar u ocultar y ademas de mostrar en valor permite enviarlo a una variable externa. -->
+<form method="post" action="/send/">
+    <!-- Primer checkbox -->
+    <input type="checkbox" id="checkbox1" onchange="toggleSliderVisibility('rangeInput1', 'checkbox1')">
+    <label for="checkbox1">Mostrar/Ocultar Slider 1</label>
+    <br>
+    <!-- Primer slider -->
+    <div id="sliderContainer1" style="display: none;">
+        Slider con rango de 0 a 100:
+        <input type="range" id="rangeInput1" value="0" min="0" max="100" onInput="updateValues(this.value, 'slider1', 'sliderValue1', 'externalSliderValue1')">
+        <output id="slider1">0</output>
+        <!-- <br>
+        Valor del slider: -->
+        <input type="text" id="sliderValue1" value="0" readonly visibility: hidden>
+        <!-- <br><br> -->
+    </div>
+
+    <!-- Segundo checkbox -->
+    <input type="checkbox" id="checkbox2" onchange="toggleSliderVisibility('rangeInput2', 'checkbox2')">
+    <label for="checkbox2">Mostrar/Ocultar Slider 2</label>
+    <br>
+    <!-- Segundo slider -->
+    <div id="sliderContainer2" style="display: none;">
+        Slider con rango de 0 a 100:
+        <input type="range" id="rangeInput2" value="0" min="0" max="100" onInput="updateValues(this.value, 'slider2', 'sliderValue2', 'externalSliderValue2')">
+        <output id="slider2">0</output>
+        <!-- <br>
+        Valor del slider: -->
+        <input type="text" id="sliderValue2" value="0" readonly visibility: hidden>
+        <!-- <br><br> -->
+    </div>
+
+    <!-- Tercer checkbox -->
+    <input type="checkbox" id="checkbox3" onchange="toggleSliderVisibility('rangeInput3', 'checkbox3')">
+    <label for="checkbox3">Mostrar/Ocultar Slider 2</label>
+    <br>
+    <!-- Segundo slider -->
+    <div id="sliderContainer3" style="display: none;">
+        Slider con rango de 0 a 100:
+        <input type="range" id="rangeInput3" value="0" min="0" max="100" onInput="updateValues(this.value, 'slider3', 'sliderValue3', 'externalSliderValue3')">
+        <output id="slider3">0</output>
+        <!-- <br>
+        Valor del slider: -->
+        <input type="text" id="sliderValue3" value="0" readonly visibility: hidden>
+        <!-- <br><br> -->
+    </div>
+</form>
+
+<script>
+    // Variable global para almacenar el nombre del botón
+    var nombreBotonGlobal;
+
+
+    // Función para mostrar u ocultar los sliders según el estado del checkbox
+    function toggleSliderVisibility(sliderId, checkboxId) {
+        var sliderContainer = document.getElementById("sliderContainer" + sliderId.slice(-1));
+        var checkbox = document.getElementById(checkboxId);
+        if (checkbox.checked) {
+            sliderContainer.style.display = "block";  // Mostrar el slider
+        } else {
+            sliderContainer.style.display = "none";   // Ocultar el slider
+        }
+    }
+    
+    // Función para actualizar los valores de los sliders y cuadros de texto
+    function updateValues(value, outputId, inputId, externalInputId, nombreBoton) {
+        document.getElementById(outputId).value = value;
+        document.getElementById(inputId).value = value;
+        document.getElementById(externalInputId).value = value;
+
+        var slider1Value = document.getElementById("slider1").textContent;
+        var slider2Value = document.getElementById("slider2").textContent;
+        var slider3Value = document.getElementById("slider3").textContent;
+
+        enviarDatosAlServidor(nombreBotonGlobal, slider1Value, slider2Value, slider3Value);
+    }
+    
+    function enviarDatosAlServidor(nombreBotonGlobal, slider1Value, slider2Value, slider3Value) {
+        var data = {
+            "slider1": slider1Value,
+            "slider2": slider2Value,
+            "slider3": slider3Value,
+            [nombreBotonGlobal]: 1
+        };
+        // console.log("Datos enviados al servidor1111111111111: ", data);
+        fetch('/guardar_estado_botones', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Datos enviados al servidor: ", data);
+        })
+        .catch((error) => {
+            console.error('Error al enviar datos al servidor:', error);
+        });
+    } 
+    
+</script>
+<!-- Cuadro de texto externo para el primer slider -->
+<!-- Valor del primer slider externo: -->
+<input type="text" id="externalSliderValue1" value="" readonly visibility: hidden>
+<!-- <br><br> -->
+
+<!-- Cuadro de texto externo para el segundo slider -->
+<!-- Valor del segundo slider externo: -->
+<input type="text" id="externalSliderValue2" value="" readonly visibility: hidden>
+<!-- <br><br> -->
+
+<!-- Cuadro de texto externo para el tercer slider -->
+<!-- Valor del tercer slider externo: -->
+<input type="text" id="externalSliderValue3" value="" readonly visibility: hidden>
+<!-- <br><br> -->
+
+
+
+
+
+
+
+
+
+<!-- **************************************************************** -->
+<!-- Agregar icono que representa a un led -->
+<!-- Icono de ejemplo -->
+<i id="miIcono" class="icon fas fa-circle"></i>
+
+<!-- Botón para cambiar el color -->
+<button onclick="cambiarColor()">Cambiar Color</button>
+<button onclick="cambiarColor2()">Cambiar Color 2</button>
+
+<script>
+  function cambiarColor() {
+    var icono = document.getElementById('miIcono');
+    // Cambiar el color del icono al azul cuando se presiona el botón
+    icono.style.color = 'blue';
+  }
+  function cambiarColor2() {
+    var icono = document.getElementById('miIcono');
+    // Cambiar el color del icono al azul cuando se presiona el botón
+    icono.style.color = 'black';
+  }
+</script>
+
+<!-- Agregar la biblioteca Font Awesome (puedes cambiarla por otra si lo deseas) -->
+<script src="https://kit.fontawesome.com/a076d05399.js"></script>
+
+<!-- **************************************************************** -->
+
+
+
+
+
+
+
+
+<div id="main-content">
+
+    <!--Se agrega la tabla para mostrar los datos-->
+    <hr class="mt-5"> 
+    <div class="table-responsive" style="max-height: 400px"></div>
+
+
+    <h2>Tabla datos sensor DHT11</h2>
+    <table id="miTabla" border="1">
+        
+
+        <!--Las siguientes lineas agregan el nombre de las columnas de la tabla-->
+        <tr>
+        <th>#</th>
+        <th>Temperatura</th>
+        <th>Humedad</th>
+        <th>Tiempo</th>
+        </tr>
+
+        <!--For para imprimir los datos del archivo json en UTC-->
+        {% for dato in datos %}
+        <tr>
+            <!--<h2>Temperatura = {{dato['temperatura']}}   Humedad = {{ dato['humedad'] }}  Tiempo = {{ dato['time'] }}</h2>-->
+            <td>{{ dato[1]}}</td>
+            <td>{{ dato[2] }}</td>
+            <td>{{ dato[0] }}</td>
+            <!--Mostrar los datos por consola-->
+            <script>
+                console.log("Datos a mostrar: ", {{ dato[1] }});
+            </script>
+        </tr>
+        
+        {% endfor %}
+
+        <!--For para imprimir los datos del archivo json en GMT5-->
+        {% for dato in datos2 %}
+            <tr>
+                <td>{{ dato[1]}}</td>
+                <td>{{ dato[2] }}</td>
+                <td>{{ dato[0] }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    </div>
+
+    <!--Las siguientes lineas de codigo agregan el contador de filas en la tabla-->
+    <script>
+        // Obtén la tabla por su ID
+        var tabla = document.getElementById("miTabla");
+
+        // Recorre las filas de la tabla (excluyendo la primera fila de encabezados)
+        for (var i = 1; i < tabla.rows.length; i++) {
+            // Crea una nueva celda en la primera columna de la fila y establece el número de fila
+            var nuevaCelda = tabla.rows[i].insertCell(0);
+            nuevaCelda.textContent = i; // Muestra el número de fila (1, 2, 3, ...)
+        }
+    </script>
+
+
+    <!-- Mostrar los datos de la variable data -->
+    <h5>Dato: <span id="inputElement"></span></h5>
+
+
+    <!-- Matriz para los elementos -->
+    <div id="matriz" class="matriz">
+        <!-- ... Contenido de la matriz ... -->
+    </div>
+
+    <div id="menu">
+        <!-- Puedes agregar más botones según sea necesario -->
+
+        <!-- Espacio de texto para mostrar el nombre del botón -->
+        <input type="text" id="espacioTexto" readonly>
+    </div>
+
+    {% endblock %}
+    {% block scripts %}
+    <!-- El siguiente script permite la creacion de nuevos botones y los almacena en
+        localstorage, esto posiblemente deba cambiarlo para almacenar los datos en un archivo -->
+    <script>
+        
+        // console.log(localStorage.getItem("objetos"));
+        // console.log("Contenido actual de localStorage:");
+        // console.log(localStorage.getItem("elementos"));
+
+        // Objeto para almacenar el estado de los botones
+        var estadoBotones = {};
+
+
+        document.addEventListener("DOMContentLoaded", function () {
+                var matriz = document.getElementById("matriz");
+                // var menu = document.getElementById("menu");
+
+                // Crear la matriz
+                for (var i = 0; i < 6; i++) {
+                    for (var j = 0; j < 6; j++) {
+                        var casilla = document.createElement("div");
+                        casilla.className = "casilla";
+                        casilla.dataset.row = i;
+                        casilla.dataset.col = j;
+                        matriz.appendChild(casilla);
+                    }
+                }
+
+                // Agregar elemento en la matriz
+                // Esta función toma un elemento HTML y una casilla como parámetros. 
+                // Clona el elemento, le agrega un botón de eliminar, y lo agrega a la casilla.
+                function agregarElementoEnCasilla(elemento, casilla, nombreBoton) {
+                    if (elemento && casilla) {
+                        var nuevoElemento = elemento.cloneNode(true);
+                        nuevoElemento.classList.remove("objeto-en-casilla");
+                        nuevoElemento.classList.add("objeto-en-casilla");
+
+
+                        // Agregar evento de clic al nuevo elemento en la matriz
+                        // Esta funcion se ejecuta cada vez que se hace clic en un elemento en la matriz
+                        // pero solo hace algo si el elemento clicado es un botón.
+                        nuevoElemento.addEventListener("click", function (event) {
+                            // Verificar si el elemento clicado es un botón
+                            if (event.target.tagName === 'BUTTON') {
+
+                                nombreBotonGlobal = event.target.textContent;
+                                // Puedes hacer lo que quieras con el contenido del botón, por ejemplo, mostrarlo en un input
+                                // var espacioTexto = document.getElementById("InputID");
+                                var espacioTexto = document.getElementById("btn_1");
+                                // console.log("espacioTexto: ", espacioTexto);
+                                espacioTexto.value = event.target.textContent;
+                                
+                                // Actualizar el estado del botón a 1 al hacer clic
+                                estadoBotones[event.target.textContent] = 1;
+                                guardarEstadoBotones();
+
+
+
+                                var slider1Value = document.getElementById("slider1").textContent;
+                                var slider2Value = document.getElementById("slider2").textContent;
+                                var slider3Value = document.getElementById("slider3").textContent;
+                                // Llamar a la función para enviar datos al servidor con el nombre del botón
+                                
+                                
+                                enviarDatosAlServidor(event.target.textContent, slider1Value, slider2Value, slider3Value);
+                                
+                                // enviarDatosAlServidor(event.target.textContent);
+                            }
+                        });
+
+                        casilla.appendChild(nuevoElemento);
+                    }
+                }
+
+                // Cargar elementos desde localStorage
+                // Esta función lee el contenido almacenado en localStorage y carga los elementos 
+                // en la matriz.
+                function cargarElementos() {
+                    // Obtener el contenido almacenado en localStorage
+                    var elementosJSON = localStorage.getItem("elementos");
+
+                    // Si hay elementos almacenados, cargarlos en la matriz
+                    if (elementosJSON) {
+                        var elementosGuardados = JSON.parse(elementosJSON);
+
+                        for (var i = 0; i < elementosGuardados.length; i++) {
+                            if (elementosGuardados[i]) {
+                                var elemento = parseHTML(elementosGuardados[i]);
+                                var casilla = matriz.getElementsByClassName("casilla")[i];
+                                agregarElementoEnCasilla(elemento, casilla);
+                                
+                                // Para evitar que se muestre el botón de eliminar al cargar los elementos se usan las
+                                // siguientes líneas
+                                var iconoBorrar = casilla.querySelector(".eliminar-btn");
+                                if (iconoBorrar) {
+                                    // console.log("iconoBorrar si existe: ", iconoBorrar);
+                                    //*********************************************************************************************************************************
+                                    iconoBorrar.setAttribute("hidden", true);
+                                    iconoBorrar.style.display = "none";
+                                    //*********************************************************************************************************************************
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Función para convertir una cadena HTML en un elemento DOM
+                function parseHTML(html) {
+                    var tmp = document.implementation.createHTMLDocument();
+                    tmp.body.innerHTML = html;
+                    return tmp.body.firstChild;
+                }
+                
+                // Cargar elementos al cargar la página
+                cargarElementos();
+
+                // Función para guardar el estado de los botones en localStorage
+                function guardarEstadoBotones() {
+                    var estadoBotonesJSON = JSON.stringify(estadoBotones);
+                    localStorage.setItem("estadoBotones", estadoBotonesJSON);
+
+                    // Enviar datos al servidor Flask
+                    // enviarDatosAlServidor(estadoBotones);
+                }
+
+                // Función para enviar datos al servidor Flask
+                // function enviarDatosAlServidor(nombreBoton) {
+                //     // console.log("Nombre del boton: " + nombreBoton);
+                //     fetch('/guardar_estado_botones', {
+                //         method: 'POST',
+                //         headers: {
+                //             'Content-Type': 'application/json',
+                //         },
+                //         // body: JSON.stringify({ datosMatriz: { [nombreBoton]: 1 } }),  // Cambio aquí para usar el nombre del botón
+                //         body: JSON.stringify({ [nombreBoton]: 1 } ),  // Cambio aquí para usar el nombre del botón
+                //     })
+                //     .then(response => response.json())
+                //     .then(data => {
+                //         // Manejar la respuesta del servidor si es necesario
+                //         console.log("Datos boton: ", data);
+                //     })
+                //     .catch((error) => {
+                //         console.error('Error al enviar datos al servidor:', error);
+                //     });
+                // }   
+        });            
+    </script>
+</div>
+{% endblock %}

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Device IoT Eafit</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --iot-primary-color: #13056e;
+      --iot-secondary-color: #13056e;
+      --iot-background-color: #ffffff;
+      --iot-text-color: #333;
+      --iot-header-height: 50px;
+      --iot-sidebar-width: 250px;
+      --iot-sidebar-minimized-width: 60px;
+    }
+
+    .iot-body {
+      font-family: 'Arial', sans-serif;
+      background-color: var(--iot-background-color);
+      color: var(--iot-text-color);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .iot-header {
+      background-color: var(--iot-primary-color);
+      color: white;
+      padding: 1rem 0;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 1000;
+      transition: all 0.3s ease;
+      height: var(--iot-header-height);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .iot-header.iot-header-scrolled {
+      padding: 0.5rem 0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .iot-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    .iot-logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    .iot-content-wrapper {
+      display: flex;
+      margin-top: var(--iot-header-height);
+      flex: 1;
+    }
+
+    .iot-sidebar {
+      overflow-x: visible; /* Cambiado de hidden a visible */
+      /* bottom: 0; */
+      position: fixed;
+      z-index: 1000;
+    }
+
+    .iot-sidebar.iot-sidebar-expanded {
+      width: var(--iot-sidebar-width);
+    }
+
+    .iot-sidebar ul {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .iot-sidebar .iot-logo-img {
+      width: 100%;
+      padding: 1rem;
+    }
+
+    .iot-sidebar .iot-nav-button {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      color: var(--iot-text-color);
+      text-decoration: none;
+      transition: background-color 0.3s ease;
+      white-space: nowrap;
+      position: relative;
+    }
+
+    .iot-sidebar .iot-nav-button:hover {
+      background-color: var(--iot-background-color);
+    }
+
+    .iot-sidebar .iot-nav-button i {
+      margin-right: 1rem;
+      width: 20px;
+      text-align: center;
+    }
+
+    .iot-sidebar:not(.iot-sidebar-expanded) .iot-nav-button span {
+      position: fixed; /* Cambiado de absolute a fixed */
+      left: calc(var(--iot-sidebar-minimized-width) + 10px);
+      top: auto; /* Eliminamos el top: 50% */
+      transform: none; /* Eliminamos la transformación */
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+      pointer-events: none;
+      z-index: 10000; /* Aumentado significativamente */
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Añadido para mejorar la visibilidad */
+    }
+
+    .iot-sidebar:not(.iot-sidebar-expanded) .iot-nav-button {
+      position: relative;
+    }
+
+    .iot-sidebar:not(.iot-sidebar-expanded) .iot-nav-button:hover span {
+      opacity: 1;
+      visibility: visible;
+      display: block;
+      width: max-content;
+      max-width: 200px;
+    }
+
+    /* Asegurarse de que el texto no se muestre cuando el sidebar está expandido */
+    .iot-sidebar.iot-sidebar-expanded .iot-nav-button span {
+      position: static;
+      background-color: transparent;
+      color: var(--iot-text-color);
+      padding: 0;
+      opacity: 1;
+      visibility: visible;
+      display: inline;
+    }
+
+    .iot-main-content {
+      flex-grow: 1;
+      padding: 2rem;
+      margin-left: var(--iot-sidebar-minimized-width);
+      transition: margin-left 0.3s ease;
+    }
+
+    .iot-sidebar.iot-sidebar-expanded + .iot-main-content {
+      margin-left: var(--iot-sidebar-width);
+    }
+
+    .iot-toggle-btn {
+      position: fixed;
+      left: var(--iot-sidebar-minimized-width);
+      top: calc(var(--iot-header-height) + 10px);
+      z-index: 1002;
+    }
+
+    .iot-sidebar.iot-sidebar-expanded + .iot-toggle-btn {
+      left: var(--iot-sidebar-width);
+    }
+
+    .iot-footer {
+      background-color: var(--iot-primary-color);
+      color: white;
+      text-align: center;
+      height: 70px; /* Altura fija */
+      line-height: 20px; /* Centra verticalmente el contenido si es de una sola línea */
+      margin-top: auto;
+      padding: 0.3rem; /* Elimina padding para asegurar la altura fija */
+    }
+
+    .iot-image {
+      max-width: 100%;
+      height: auto;
+    }
+
+    @media (max-width: 768px) {
+      .iot-sidebar {
+        left: calc(-1 * var(--iot-sidebar-width));
+        width: var(--iot-sidebar-width);
+      }
+
+      .iot-sidebar.iot-sidebar-expanded {
+        left: 0;
+      }
+
+      .iot-main-content {
+        margin-left: 0;
+      }
+
+      .iot-toggle-btn {
+        left: 0;
+      }
+
+      .iot-sidebar.iot-sidebar-expanded + .iot-toggle-btn {
+        left: var(--iot-sidebar-width);
+      }
+    }
+  </style>
+</head>
+
+<body class="iot-body">
+  <header class="iot-header">
+    <div class="iot-wrapper">
+      <div class="iot-logo">Device IoT Eafit</div>
+    </div>
+  </header>
+
+  <div class="iot-content-wrapper">
+    <div class="iot-sidebar">
+      <ul>
+        <li><a class="iot-nav-button" href="{{ url_for('hello_world') }}"><i class="fas fa-home"></i><span>Inicio</span></a></li>
+        <li><a class="iot-nav-button" href="{{ url_for('load_data') }}"><i class="fas fa-database"></i><span>Mostrar datos</span></a></li>
+        <li><a class="iot-nav-button" href="{{ url_for('dashboard') }}"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a></li>
+        <li><a class="iot-nav-button" href="{{ url_for('generador') }}"><i class="fas fa-code"></i><span>Generador de código</span></a></li>
+        <li><a class="iot-nav-button" href="{{ url_for('register_user') }}"><i class="fas fa-user-plus"></i><span>Gestión de Usuarios</span></a></li>
+        <li><a class="iot-nav-button" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i><span>Log Out</span></a></li>
+      </ul>
+    </div>
+    <div class="iot-toggle-btn">
+      <i class="fas fa-bars"></i>
+    </div>
+    <div class="iot-main-content">
+      <center><li><img src="{{ url_for('static', filename='Imagenes/DeviceIoTEafit2.jpg') }}" class="iot-logo-img" alt="Logo Device IoT Eafit"></li></center>
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+
+  <footer class="iot-footer">
+    <p>
+      Universidad EAFIT<br>
+      <small>Copyright 2024 - Todos los derechos reservados</small><br>
+      <small>Medellín Colombia</small>
+    </p>
+  </footer>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <script>
+    $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+
+    $(document).ready(function(){
+      $('.iot-toggle-btn').click(function(){
+        $('.iot-sidebar').toggleClass('iot-sidebar-expanded');
+        $('.iot-main-content').toggleClass('iot-sidebar-expanded');
+      });
+
+      $(window).scroll(function(){
+        if($(this).scrollTop() > 0){
+          $('.iot-header').addClass('iot-header-scrolled');
+        } else {
+          $('.iot-header').removeClass('iot-header-scrolled');
+        }
+      });
+
+      // Manejar hover en dispositivos móviles
+      $('.iot-nav-button').on('touchstart', function() {
+        if (!$('.iot-sidebar').hasClass('iot-sidebar-expanded')) {
+          $(this).find('span').css({'display': 'block', 'opacity': '1', 'visibility': 'visible'});
+        }
+      }).on('touchend', function() {
+        if (!$('.iot-sidebar').hasClass('iot-sidebar-expanded')) {
+          setTimeout(() => {
+            $(this).find('span').css({'opacity': '0', 'visibility': 'hidden'});
+          }, 1000); // Oculta después de 1 segundo
+        }
+      });
+    });
+
+    // Posicionar el tooltip al hacer hover
+    $('.iot-nav-button').on('mouseenter', function(e) {
+      if (!$('.iot-sidebar').hasClass('iot-sidebar-expanded')) {
+        var $tooltip = $(this).find('span');
+        var buttonTop = $(this).offset().top;
+        var viewportHeight = $(window).height();
+        var tooltipHeight = $tooltip.outerHeight();
+
+        // Ajustar la posición vertical del tooltip
+        if (buttonTop + tooltipHeight > viewportHeight) {
+          $tooltip.css('top', viewportHeight - tooltipHeight - 10);
+        } else {
+          $tooltip.css('top', buttonTop);
+        }
+      }
+    });
+
+
+    // Función para posicionar el tooltip
+    function positionTooltip($button) {
+      if (!$('.iot-sidebar').hasClass('iot-sidebar-expanded')) {
+        var $tooltip = $button.find('span');
+        var buttonTop = $button.offset().top;
+        var scrollTop = $(window).scrollTop();
+        var viewportHeight = $(window).height();
+        var tooltipHeight = $tooltip.outerHeight();
+
+        // Ajustar la posición vertical del tooltip
+        var tooltipTop = buttonTop - scrollTop;
+        if (tooltipTop + tooltipHeight > viewportHeight) {
+          tooltipTop = viewportHeight - tooltipHeight - 10;
+        }
+
+        $tooltip.css('top', tooltipTop);
+      }
+    }
+
+    // Manejar el hover en los botones del menú
+    $('.iot-nav-button').on('mouseenter', function() {
+      positionTooltip($(this));
+    });
+
+    // Reposicionar los tooltips al hacer scroll
+    $(window).on('scroll', function() {
+      $('.iot-nav-button:hover').each(function() {
+        positionTooltip($(this));
+      });
+    });
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

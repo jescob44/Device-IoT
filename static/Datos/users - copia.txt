@@ -1,0 +1,6 @@
+1,Administrador,Alex,alex1,1111,0,0,0,0,0
+4,Estudiante,Alex2,alex2,0,0,0,0,0,0
+5,Estudiante,Alex3,alex3,0,0,0,0,0,0
+6,Estudiante,Alex4,alex4,0,0,0,0,0,0
+7,Estudiante,Alex6,alex6,0,0,0,0,0,0
+10,Estudiante,alextremo677,199972,AlexEee,Escobar,alextremo677@yahoo.com,1111111111111,jsgdfjva,1111111111111

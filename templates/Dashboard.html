@@ -1,0 +1,944 @@
+<!-- Extend flask layout.html -->
+{% extends 'layout4.html' %} {% block content %}
+
+
+
+
+
+<style>
+    /* Estilos generales */
+    body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        background-color: #ffffff;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    /* Estilos para las tarjetas */
+    .card {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        padding: 20px;
+        max-width: 800px; /* Limita el ancho máximo */
+    }
+
+    /* Estilos para los sliders */
+    .slider-container {
+        margin-bottom: 15px;
+    }
+
+    .slider-label {
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    input[type="range"] {
+        width: 100%;
+    }
+
+    /* Estilos para los checkboxes */
+    .checkbox-container {
+        margin-bottom: 10px;
+    }
+
+    /* Estilos para el menú lateral y la matriz */
+    .container3 {
+        width: 100%;
+        max-width: 800px; /* Limita el ancho máximo */
+        margin: 20px auto; /* Centra el contenedor y agrega margen superior e inferior */
+        padding: 20px;
+    }
+    
+    #menu {
+        flex: 1;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    #matriz {
+        flex: 3;
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 10px;
+    }
+
+    .casilla {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 10px;
+        min-height: 50px;
+    }
+
+    /* Estilos para los elementos arrastrables */
+    .draggable {
+        cursor: move;
+        padding: 5px 10px;
+        margin: 5px 0;
+        background-color: #e9ecef;
+        border-radius: 4px;
+        display: inline-block;
+    }
+
+    /* Estilos para los botones */
+    /* .btn {
+        padding: 8px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: #fff;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        color: #fff;
+    } */
+
+    /* Estilos para los iconos */
+    .icon {
+        font-size: 24px;
+        margin-right: 10px;
+    }
+
+    Tooltip para mostrar IDs
+    [data-tooltip] {
+        position: relative;
+    }
+
+    [data-tooltip]:after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #333;
+        color: #fff;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    [data-tooltip]:hover:after {
+        opacity: 1;
+    }
+</style>
+
+
+
+
+
+<!-- ************************************************************************** -->
+<!-- Slider que se pueden mostrar u ocultar y ademas de mostrar en valor permite enviarlo a una variable externa. -->
+<form method="post" action="/send/">
+    <div class="container3">
+        <div class="card">
+
+            
+            <!-- Primer checkbox -->
+            <input type="checkbox" id="checkbox1" onchange="toggleSliderVisibility('rangeInput1', 'checkbox1')">
+            <label for="checkbox1">Mostrar/Ocultar Slider 1</label>
+            <br>
+            <!-- Primer slider -->
+            <div id="sliderContainer1" style="display: none;">
+                Slider con rango de 0 a 100:
+                <input type="range" id="rangeInput1" value="0" min="0" max="50" onInput="updateValues(this.value, 'rangeOutput1', 'sliderValue1', 'externalSliderValue1')">
+                <output id="rangeOutput1">0</output>
+                <input type="text" id="sliderValue1" value="0" readonly visibility: hidden>
+            </div>
+
+            <!-- Segundo checkbox -->
+            <input type="checkbox" id="checkbox2" onchange="toggleSliderVisibility('rangeInput2', 'checkbox2')">
+            <label for="checkbox2">Mostrar/Ocultar Slider 2</label>
+            <br>
+            <!-- Segundo slider -->
+            <div id="sliderContainer2" style="display: none;">
+                Slider con rango de 0 a 100:
+                <input type="range" id="rangeInput2" value="0" min="0" max="100" onInput="updateValues(this.value, 'rangeOutput2', 'sliderValue2', 'externalSliderValue2')">
+                <output id="rangeOutput2">0</output>
+                <input type="text" id="sliderValue2" value="0" readonly visibility: hidden>
+            </div>
+
+            <!-- Tercer checkbox -->
+            <input type="checkbox" id="checkbox3" onchange="toggleSliderVisibility('rangeInput3', 'checkbox3')">
+            <label for="checkbox3">Mostrar/Ocultar Slider 2</label>
+            <br>
+            <!-- Segundo slider -->
+            <div id="sliderContainer3" style="display: none;">
+                Slider con rango de 0 a 100:
+                <input type="range" id="rangeInput3" value="0" min="0" max="100" onInput="updateValues(this.value, 'rangeOutput3', 'sliderValue3', 'externalSliderValue3')">
+                <output id="rangeOutput3">0</output>
+                <!-- Valor del slider: -->
+                <input type="text" id="sliderValue3" value="0" readonly visibility: hidden>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    // Función para mostrar u ocultar los sliders según el estado del checkbox
+    function toggleSliderVisibility(sliderId, checkboxId) {
+        var sliderContainer = document.getElementById("sliderContainer" + sliderId.slice(-1));
+        var checkbox = document.getElementById(checkboxId);
+        if (checkbox.checked) {
+            sliderContainer.style.display = "block";  // Mostrar el slider
+        } else {
+            sliderContainer.style.display = "none";   // Ocultar el slider
+        }
+    }
+    
+    // Función para actualizar los valores de los sliders y cuadros de texto
+    function updateValues(value, outputId, inputId, externalInputId) {
+        // Actualizar el output (valor al lado del slider)
+        document.getElementById(outputId).value = value;
+        // Actualizar el cuadro de texto interno al formulario
+        document.getElementById(inputId).value = value;
+        // Actualizar el cuadro de texto externo correspondiente
+        document.getElementById(externalInputId).value = value;
+    }
+</script>
+<!-- Cuadro de texto externo para el primer slider -->
+<!-- Valor del primer slider externo: -->
+<input type="text" id="externalSliderValue1" value="" readonly visibility: hidden>
+<!-- Cuadro de texto externo para el segundo slider -->
+<!-- Valor del segundo slider externo: -->
+<input type="text" id="externalSliderValue2" value="" readonly visibility: hidden>
+<!-- Cuadro de texto externo para el tercer slider -->
+<!-- Valor del tercer slider externo: -->
+<input type="text" id="externalSliderValue3" value="" readonly visibility: hidden>
+<!-- ************************************************************************** -->
+
+
+
+<!-- Contenedor menu lateral -->
+<div id="container">
+    <div id="menu">
+        <h3>Menú Lateral</h3>
+    </div>
+    <!-- <div id="menu-lateral">
+        <h3>Menú Lateral</h3>
+    </div> -->
+    <div id="matriz"></div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+<!-- Agregar icono que representa a un led -->
+<!-- Icono de ejemplo -->
+<!-- <i id="miIcono" class="icon fa fa-circle"></i> -->
+<!-- <i class="fa-regular fa-circle"></i> -->
+<!-- Botón para cambiar el color -->
+<!-- <button onclick="cambiarColor()">Cambiar Color</button>
+<button onclick="cambiarColor2()">Cambiar Color 2</button>
+
+<script>
+  function cambiarColor() {
+    var icono = document.getElementById('miIcono');
+    // Cambiar el color del icono al azul cuando se presiona el botón
+    icono.style.color = 'green';
+  }
+  function cambiarColor2() {
+    var icono = document.getElementById('miIcono');
+    // Cambiar el color del icono al azul cuando se presiona el botón
+    icono.style.color = 'black';
+  }
+</script> -->
+
+
+
+
+
+
+
+
+
+{% endblock %}
+{% block scripts %}
+
+
+<!-- El siguiente script permite la creacion de nuevos botones y los almacena en
+    localstorage, esto posiblemente deba cambiarlo para almacenar los datos en un archivo -->
+<script>
+    var inputElements = []; // Variable para almacenar la ubicacion de los elementos tipo input
+      // La siguiente linea se usa para limpiar el localstorage
+    // localStorage.removeItem("elementos");
+    // console.log(localStorage.getItem("objetos"));
+    // idCounter = 1;
+    // localStorage.setItem("idCounter", idCounter);
+    // console.log("idCounter: ", localStorage.getItem("idCounter"));
+
+    // console.log("Contenido actual de localStorage:  ", localStorage.getItem("elementos"));
+
+    // Función para mostrar el ID del elemento al pasar el mouse sobre él
+    function mostrarID(elemento) {
+        var id = elemento.id;
+        elemento.setAttribute("data-tooltip", id); // Establecer el atributo de datos como el ID
+    }
+
+    // Función para ocultar el ID del elemento al quitar el mouse
+    function ocultarID(elemento) {
+        elemento.removeAttribute("data-tooltip"); // Eliminar el atributo de datos
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+            var matriz = document.getElementById("matriz");
+            var menu = document.getElementById("menu");
+            var draggedItem;
+            var editingItem;
+            // var idCounter = parseInt(localStorage.getItem("idCounter")) || 1;
+            // console.log("idconter: ",idCounter);
+
+            // Crear la matriz
+            for (var i = 0; i < 6; i++) {
+                for (var j = 0; j < 6; j++) {
+                    var casilla = document.createElement("div");
+                    casilla.className = "casilla";
+                    casilla.dataset.row = i;
+                    casilla.dataset.col = j;
+                    casilla.addEventListener("dragover", allowDrop);
+                    casilla.addEventListener("drop", dropItem);
+                    casilla.addEventListener("dblclick", function (event) {
+                        editarNombreElemento(event.target);
+                    });
+                    matriz.appendChild(casilla);
+                }
+            }
+            
+            // Agregar elementos al menú lateral
+            //agregarElementoAlMenu(Nombre, tipo, id);
+            agregarElementoAlMenu("Boton", "button", "btn_1");
+            agregarElementoAlMenu("Etiqueta", "label", "label_1");
+            agregarElementoAlMenu("espacioTexto", "input", "InputID");
+
+
+            // Agregar un icono 
+            agregarElementoAlMenu("led", "icon", "icon_1");
+
+
+
+            // Función para agregar un elemento al menú lateral
+            function agregarElementoAlMenu(nombre, tipo, id) {
+                if(tipo === "input")
+                {
+                    var contenedor = document.createElement("div");
+                    contenedor.classList.add("elemento-container"); // Nueva clase para el contenedor
+
+                    var elemento = document.createElement(tipo);
+                    elemento.innerHTML = nombre;
+                    elemento.draggable = true;
+                    
+                    if (tipo == "text" || tipo == "input") {
+                        // Para elementos tipo input y text, agregar clases y configurar el ID correctamente
+                        elemento.classList.add("form-control", "bg-light");
+                    }
+
+                    // Drag and drop
+                    elemento.addEventListener("dragstart", function (event) {
+                        draggedItem = contenedor.cloneNode(true); // Clonar el contenedor en lugar del elemento
+                        event.dataTransfer.setData("text", "");
+                    });
+
+                    // Agregar el elemento al contenedor
+                    contenedor.appendChild(elemento);
+                    menu.appendChild(contenedor);
+                }
+                
+                else{
+                    var elemento = document.createElement(tipo);
+                    elemento.innerHTML = nombre;
+                    elemento.draggable = true;
+                    elemento.id = id; // Asignar el id al elemento
+
+                    if (tipo == "button") {
+                        elemento.classList.add("btn", "btn-outline-primary", "m-2");// m-2 agrega un margen por todos los lados
+                    }
+                    if (tipo == "label") {
+                        // elemento.classList.add("badge", "bg-secondary", "m-2");
+                        elemento.classList.add("badge", "m-2", "text-dark");
+                    }
+                    
+                    if(tipo === "icon") {
+                        // elemento = document.createElement("i"); // Crear un elemento <i> para iconos
+                        elemento.classList.add("fas", "fa-circle", "m-2"); // Ajustar las clases según sea necesario
+                        elemento.id = id;
+                    }
+                                
+
+                    // Drag and drop
+                    elemento.addEventListener("dragstart", function (event) {
+                        draggedItem = event.target.cloneNode(true);
+                        event.dataTransfer.setData("text", "");
+                    });
+
+                    menu.appendChild(elemento);
+                }
+            }
+
+            // Mover elementos en la matriz
+            function allowDrop(event) {
+                event.preventDefault();
+            }
+
+
+
+
+
+
+
+
+
+
+
+            // En la siguiente funcion falta sacar el ID
+// -------------------------------------------------------------------------
+            // Funcion para guardar elementos cuando se sueltan en la matriz
+            function dropItem(event) {
+                event.preventDefault();
+                var casillaActual = event.target;
+                // console.log("casillaActual: ",casillaActual)
+                if (casillaActual && casillaActual.classList.contains("casilla")) {
+                    agregarElementoEnCasilla(draggedItem, casillaActual);
+                    guardarElementos(); 
+                }
+
+                // var row = casillaActual.dataset.row;
+                // var col = casillaActual.dataset.col;
+                // // var id = casillaActual.id;
+                // var id = draggedItem.id;
+                // // console.log("id: ",id);
+                // // inputElements.push({  row: row, col: col });
+                // console.log("row: ",row,"   col: ",col,"idiiiiiii: ",id)
+                // console.log("inputElements: ",inputElements)
+            }
+// -------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+            // function dragItem(event) {
+            //     draggedItem = event.target;
+            // }
+
+            // function dropItem(event) {
+            //     event.preventDefault();
+                
+               
+            //         var casillaActual = event.target;
+            //         if (casillaActual.classList.contains("casilla")) {
+            //             casillaActual.innerHTML = "";
+            //             var nuevoElemento = draggedItem.cloneNode(true);
+            //             nuevoElemento.draggable = false;
+            //             nuevoElemento.classList.add("dropped-item");
+            //             nuevoElemento.addEventListener("dblclick", function (event) {
+            //                 editarNombreElemento(event.target);
+            //             });
+            //             casillaActual.appendChild(nuevoElemento);
+            //             draggedItem = null;
+
+            //             // Almacenar la ubicación y el ID del elemento en el vector
+            //             var row = casillaActual.dataset.row;
+            //             var col = casillaActual.dataset.col;
+            //             var id = nuevoElemento.id;
+            //             console.log("id: ",id);
+            //             inputElements.push({ id: id, row: row, col: col });
+            //             console.log("row: ",row,"   col: ",col,"   id: ",id)
+
+            //             agregarElementoEnCasilla(draggedItem, casillaActual);
+            //             guardarElementos(); 
+
+            //             // Guardar el vector en localStorage
+            //             // localStorage.setItem("inputElements", JSON.stringify(inputElements));
+            //         }
+
+            //         // var casillaActual = event.target;
+            //         // if (casillaActual && casillaActual.classList.contains("casilla")) {
+            //         //     agregarElementoEnCasilla(draggedItem, casillaActual);
+            //         //     guardarElementos(); 
+            //         // }
+                
+            // }
+
+            // Funcion para guardar los elementos cuando se modifica el nombre
+            function editarNombreElemento(elemento, tipo) { 
+                if(tipo === "input")
+                {
+                    if (editingItem) {
+                        guardarCambiosNombre();
+                    }
+
+                    editingItem = contenedor;
+                    var idOriginal = contenedor.querySelector('[id]').id; // Obtener el ID actual
+                    var inputNombre = document.createElement("input");
+                    inputNombre.type = "text";
+                    inputNombre.className = "nombre-input";
+                    inputNombre.value = idOriginal;
+
+                    inputNombre.addEventListener("blur", function () {
+                        guardarCambiosNombre();
+                    });
+                    inputNombre.addEventListener("keydown", function (event) {
+                        if (event.key === "Enter") {
+                            guardarCambiosNombre();
+                        }
+                    });
+                    contenedor.innerHTML = ""; // Limpiar contenido para agregar el campo de edición
+                    contenedor.appendChild(inputNombre);
+                    inputNombre.focus();
+                }
+                else{
+                    if (editingItem) {
+                        guardarCambiosNombre();
+                    }
+
+                    editingItem = elemento;
+                    var idOriginal = elemento.id;
+                    var nombreOriginal = elemento.textContent;
+                    elemento.innerHTML = ""; // Limpiar contenido para agregar el campo de edición
+                    var inputNombre = document.createElement("input");
+                    inputNombre.type = "text";
+                    inputNombre.className = "nombre-input";
+                    inputNombre.value = nombreOriginal;
+                    
+                    inputNombre.addEventListener("blur", function () {
+                        guardarCambiosNombre();
+                    });
+                    inputNombre.addEventListener("keydown", function (event) {
+                        if (event.key === "Enter") {
+                            guardarCambiosNombre();
+                        }
+                    });
+                    elemento.appendChild(inputNombre);
+                    inputNombre.focus();  
+                }              
+            }
+
+            // Guardar cambios en el nombre
+            function guardarCambiosNombre() {
+                if (editingItem) {
+                    var inputNombre = editingItem.querySelector(".nombre-input");
+                    if (inputNombre) {
+                        var nuevoNombre = inputNombre.value.trim();
+                        if (nuevoNombre !== "") {
+                            editingItem.textContent = nuevoNombre;
+                            guardarElementos();
+                        }
+                    }   
+                }
+                editingItem = null;
+            }
+
+
+
+
+            var inputs = [];
+            var inputs2 = [];
+            var num = 0;
+            var num2 = 0;
+            var valMin = 0;
+            var vect = [];
+            var j1 = 0;
+
+            var inputIDs = [];            
+            // Agregar elemento en la matriz
+            // Esta función toma un elemento HTML y una casilla como parámetros. 
+            // Clona el elemento, le agrega un botón de eliminar, y lo agrega a la casilla.
+            function agregarElementoEnCasilla(elemento, casilla) {
+                if (elemento && casilla) {
+                    var nuevoElemento = elemento.cloneNode(true);
+                    // console.log("elemento: ",elemento);
+                    // console.log("casilla: ",casilla);
+                    // Remover el span de eliminar si ya existe, esto se hace para evitar duplicados
+                    if (nuevoElemento.querySelector(".eliminar-btn")) {
+                        nuevoElemento.querySelector(".eliminar-btn").remove();
+                    }
+                    nuevoElemento.classList.remove("objeto-en-casilla");
+                    nuevoElemento.classList.add("objeto-en-casilla");
+
+                    var eliminarBtn = document.createElement("span");
+                    eliminarBtn.className = "eliminar-btn";
+                    eliminarBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+                    eliminarBtn.title = "Eliminar";
+                    nuevoElemento.appendChild(eliminarBtn);
+
+                    // El siguiente if funciona hasta cierto punto, evita el cambio de nombres, pero no evita repetir ID
+                    if(nuevoElemento.className === "elemento-container objeto-en-casilla")
+                    {
+                        // if (nuevoElemento.tagName === "espacioTexto") {
+                        var numInputs = matriz.querySelectorAll('.casilla input').length;
+
+                        num++;
+                        // console.log("length: ", inputs2.length, "   inputs2: ", inputs2);
+                        inputEst = false;
+                        valId = "";
+                        k=1;
+                        for(var i = 20; i > 0; i--)
+                        {
+                            if(nuevoElemento.id === "input_" + i)
+                            {
+                                inputEst = true;
+                                // valId = "input_" + i;
+                                // break;
+                            }
+                        }
+                        if(inputEst != true){
+                            nuevoElemento.id = "input_" + (numInputs + 1);
+                            inputIDs.push(nuevoElemento.id);
+                        }
+
+
+
+
+                        //--------------
+                        // // console.log("length: ", inputs2.length, "   inputs2: ", inputs2);
+                        // inputEst = false;
+                        // for(var i = 1; i < 21; i++)
+                        // {
+                        //     for(var j = 0; j < inputs2.length; j++)
+                        //     {
+                        //         if(inputs2[j] === "input_" + i)
+                        //         {
+                        //             nuevoElemento.id = "input_" + i;
+                        //             inputIDs.push(nuevoElemento.id);
+                        //             inputEst = true;
+                        //             // break;
+                        //         }
+                        //     }
+                        //     if(inputEst == false){
+                        //         nuevoElemento.id = "input_" + i;
+                        //         inputIDs.push(nuevoElemento.id);
+
+                        //         i=20;
+                        //         // break;
+                        //     }
+                        // }
+                        // if(inputEst != true){
+                        //     // nuevoElemento.id = "input_" + (numInputs + 1);
+                        //     inputIDs.push(nuevoElemento.id);
+                        // }
+                        // else
+                        // {
+                            
+                        //     inputIDs.push(nuevoElemento.id);
+                        // }
+                        
+
+
+
+
+
+                    }
+
+                  
+                    if(nuevoElemento.className === "elemento-container objeto-en-casilla")
+                    {
+                        // Para saber cuantos elementos tipo icon hay se hace los iguiente:
+                        var numIcons = matriz.querySelectorAll('.casilla icon').length;
+                        console.log("numIcons: ", numIcons);
+                        // Para saber el tipo de elemento que se esta agregando
+                        nuevoElemento.tipo = nuevoElemento.tagName;
+                        console.log("nuevoElemento.tipo : ", nuevoElemento.tipo );
+                    }
+
+                    eliminarBtn.addEventListener("click", function () {
+                        var confirmarEliminar = confirm("¿Estás seguro de que quieres eliminar este elemento?");
+                        if (confirmarEliminar) {
+                            var elementoEliminar = this.closest(".objeto-en-casilla");
+                            elementoEliminar.parentNode.removeChild(elementoEliminar);
+                            guardarElementos();
+                        }
+                    });
+
+                    // Agregar eventos mouseover y mouseout al elemento input
+                    // para mostrar y ocultar el ID del elemento, solo si el elemento es de tipo input
+                    nuevoElemento.addEventListener("mouseover", function() {
+                        if(nuevoElemento.className === "elemento-container objeto-en-casilla")
+                        {
+                            mostrarID(nuevoElemento);
+                        }
+                    });
+
+                    nuevoElemento.addEventListener("mouseout", function() {
+                        ocultarID(nuevoElemento);
+                    });
+                    casilla.appendChild(nuevoElemento);
+                    // guardarElementos(); // Guardar después de agregar el elemento a la matriz
+                }
+            }
+
+
+
+
+
+
+
+
+
+            // Funcion para almacenar el ID de los inputs que hay en la matriz
+            function contadorInput(elemento, casilla) {
+                if (elemento && casilla) {
+                    var nuevoElemento = elemento.cloneNode(true);
+                    // Remover el span de eliminar si ya existe, esto se hace para evitar duplicados
+                    if (nuevoElemento.querySelector(".eliminar-btn")) {
+                        nuevoElemento.querySelector(".eliminar-btn").remove();
+                    }
+                    nuevoElemento.classList.remove("objeto-en-casilla");
+                    nuevoElemento.classList.add("objeto-en-casilla");
+
+                    // Generar un ID único para el elemento tipo Input, los otros elementos no lo necesitan
+                    // Contar el número de elementos tipo input en la matriz
+
+                    // El siguiente if funciona hasta cierto punto, evita el cambio de nombres, pero no evita repetir ID
+                    if(nuevoElemento.className === "elemento-container objeto-en-casilla")
+                    {
+                        // if (nuevoElemento.tagName === "espacioTexto") {
+                        var numInputs = matriz.querySelectorAll('.casilla input').length;
+
+                        // Para saber el tipo de elemento que se esta agregando
+                        // nuevoElemento.tipo = nuevoElemento.querySelector("input").type;
+                        
+                        // Almacenar los ID de los elementos tipo input en un arreglo
+                        inputs2[num2] = nuevoElemento.id;
+                        num2++;
+
+
+
+                        // console.log("1111111111111111111111111111111111111111111111");
+
+                        // var row = matriz.dataset.row;
+                        // var col = matriz.dataset.col;
+                        // var id = matriz.id;
+                        // // console.log("id: ",id);
+                        // inputElements.push({  row: row, col: col });
+                        // // console.log("row: ",row,"   col: ",col,"id: ",id)
+                        // console.log("inputElements: ",inputElements)
+                    }
+                }
+            } 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+           
+
+
+
+
+
+
+
+
+            // Guardar elementos en localStorage
+            // Esta función recorre todas las casillas en la matriz y guarda el contenido 
+            // de la primera posición (si hay elementos) en formato JSON en localStorage.
+            function guardarElementos() {
+                // Obtener todas las casillas de la matriz
+                var casillas = matriz.getElementsByClassName("casilla");
+                var elementosGuardados = [];
+                
+                // Iterar sobre cada casilla
+                for (var i = 0; i < casillas.length; i++) {
+                    // Obtener elementos en la casilla actual
+                    var elementosEnCasilla = casillas[i].getElementsByClassName("objeto-en-casilla");
+                    // Guardar el contenido de la primera posición si hay elementos
+                    // console.log("elementosEnCasilla ",i," : ", elementosEnCasilla[0]);
+                    
+                    if (elementosEnCasilla.length > 0) {
+                        // Convertir el elemento actual a HTML y guardarlo
+                        elementosGuardados.push(elementosEnCasilla[0].outerHTML);
+                    } else {
+                        elementosGuardados.push(null);
+                    }
+                }
+                var elementosJSON = JSON.stringify(elementosGuardados);
+                localStorage.setItem("elementos", elementosJSON);     
+                guardarDatosEnServidor(elementosJSON);
+
+
+            }
+
+
+
+
+            // Funcion que permite guardar los elementos de la matriz en un archivo txt
+            function guardarDatosEnServidor(elementosJSON) {
+                fetch('/guardar_datos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ elementos: elementosJSON })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Success:', data);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+            }
+
+
+            // Cargar elementos desde localStorage
+            // Esta función lee el contenido almacenado en localStorage y carga los elementos 
+            // en la matriz.
+            // function cargarElementos() {
+            //     // Obtener el contenido almacenado en localStorage
+            //     var elementosJSON = localStorage.getItem("elementos");
+
+            //     // Si hay elementos almacenados, cargarlos en la matriz
+            //     if (elementosJSON) {
+            //         var elementosGuardados = JSON.parse(elementosJSON);
+
+
+            //         for (var i = 0; i < elementosGuardados.length; i++) {
+            //             if (elementosGuardados[i]) {
+            //                 var elemento = parseHTML(elementosGuardados[i]);
+            //                 var casilla = matriz.getElementsByClassName("casilla")[i];
+            //                 contadorInput(elemento, casilla);
+            //             }
+            //         }
+
+
+            //         for (var i = 0; i < elementosGuardados.length; i++) {
+            //             if (elementosGuardados[i]) {
+            //                 var elemento = parseHTML(elementosGuardados[i]);
+            //                 var casilla = matriz.getElementsByClassName("casilla")[i];
+            //                 agregarElementoEnCasilla(elemento, casilla);
+            //             }
+            //         }
+            //     }
+            // }
+
+            function cargarElementos() {
+                fetch('/cargar_datos')
+                    .then(response => response.json())
+                    .then(data => {
+                        var elementosJSON = data.elementos;
+
+                        if (elementosJSON) {
+                            var elementosGuardados = JSON.parse(elementosJSON);
+
+                            for (var i = 0; i < elementosGuardados.length; i++) {
+                                if (elementosGuardados[i]) {
+                                    var elemento = parseHTML(elementosGuardados[i]);
+                                    var casilla = matriz.getElementsByClassName("casilla")[i];
+                                    contadorInput(elemento, casilla);
+                                }
+                            }
+
+                            for (var i = 0; i < elementosGuardados.length; i++) {
+                                if (elementosGuardados[i]) {
+                                    var elemento = parseHTML(elementosGuardados[i]);
+                                    var casilla = matriz.getElementsByClassName("casilla")[i];
+                                    agregarElementoEnCasilla(elemento, casilla);
+                                }
+                            }
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error al cargar los datos:', error);
+                    });
+            }
+
+            function parseHTML(html) {
+                var tmp = document.implementation.createHTMLDocument();
+                tmp.body.innerHTML = html;
+                return tmp.body.firstChild;
+            }
+
+            // Cargar elementos al cargar la página
+            cargarElementos();
+
+            // Llamar a la función agregarEventosMouse al cargar la página
+            document.addEventListener("DOMContentLoaded", function() {
+                agregarEventosMouse();
+            });
+        });
+
+
+
+
+
+
+
+
+        // setInterval(cambiarColor, 1000);
+
+        // Funicones para cambio de color led
+        // function cambiarColor() {
+        //     var icono = document.getElementById('icon_1');
+        //     // Cambiar el color del icono al azul cuando se presiona el botón
+        //     // icono.style.color = 'green';
+
+
+        //     if(icono.style.color === 'green')
+        //     {
+        //         icono.style.color = 'black';
+        //     }
+        //     else
+        //     {
+        //         icono.style.color = 'green';
+        //     }
+        // }
+        // function cambiarColor2() {
+        //     var icono = document.getElementById('miIcono');
+        //     // Cambiar el color del icono al azul cuando se presiona el botón
+        //     icono.style.color = 'black';
+        // }
+
+
+
+
+
+
+
+
+    </script>
+
+    
+
+{% endblock %}

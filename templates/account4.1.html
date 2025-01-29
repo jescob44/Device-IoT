@@ -1,0 +1,129 @@
+{% extends "layout4.html" %} {% block content %} 
+
+{% if name %}
+  <h2>Hello {{ name }}!</h2>
+{% endif %}
+
+
+<!--Las siguientes lineas se usan para crear una caja de texto en la cual se ingresa el nuevo usuario-->
+<hr class="mt-3"> 
+<div class="text-center">
+
+  <h3>Ingrese el nuevo usuario</h3>
+
+  <form action="{{ url_for('profile2')}}" method="post">
+    <input type="text" name="user_name" />
+    <input type="submit" value="Enviar usuario"/>
+  </form>
+    <!--La siguiente caja de texto se usa para ingresar los datos a borrar-->
+    <h3>Ingrese el tiempo que desea eliminar</h3>
+    <form action="{{ url_for('borrar_datos')}}" method="post">
+      <input type="text" name="time_delete" />
+      <input type="submit" />
+
+      <!--Mostrar un boton para desplegar ventana emergente-->
+      <button id="openModal">Borrar usuario</button>
+      <div class="modal" id="modal">
+          <div class="modal-content">
+              <h2>Ventana Emergente</h2>
+              <p>Contenido de la ventana emergente.</p>
+              <button id="closeModal">Cerrar</button>
+          </div>
+      </div>
+    </form>
+  </form>
+
+  <!--La siguiente caja de texto se usa para actualizar los datos especificos-->
+  <h3>Ingrese el tiempo que desea modificar</h3>
+  <h4>Tiempo anterior Tiempo nuevo</h4>
+  <form action="{{ url_for('actualizar_datos')}}" method="post">
+    <input type="text" name="time_old" />
+    <input type="text" name="time_new" />
+    <input type="submit" />
+
+     <!--Mostrar un boton para desplegar ventana emergente-->
+     <button id="openModal">Modificar usuario</button>
+     <div class="modal" id="modal">
+         <div class="modal-content">
+             <h2>Ventana Emergente</h2>
+             <p>Contenido de la ventana emergente.</p>
+             <button id="closeModal">Cerrar</button>
+         </div>
+     </div>
+  </form>
+</div>
+
+<!--Se agrega la tabla para mostrar los datos-->
+<hr class="mt-5"> 
+<div class="table-responsive" style="max-height: 400px"></div>
+
+
+<h2>Tabla datos sensor DHT11</h2>
+  <table id="miTabla" border="1">
+    
+
+    <!--Las siguientes lineas agregan el nombre de las columnas de la tabla-->
+    <tr>
+      <th>#</th>
+      <th>Temperatura</th>
+      <th>Humedad</th>
+      <th>Tiempo</th>
+    </tr>
+
+    <!--For para imprimir los datos del archivo json en UTC-->
+    {% for dato in datos %}
+    <tr>
+      <!--<h2>Temperatura = {{dato['temperatura']}}   Humedad = {{ dato['humedad'] }}  Tiempo = {{ dato['time'] }}</h2>-->
+      <td>{{ dato[1]}}</td>
+      <td>{{ dato[2] }}</td>
+      <td>{{ dato[0] }}</td>
+    </tr>
+    
+    {% endfor %}
+
+    <!--For para imprimir los datos del archivo json en GMT5-->
+    {% for dato in datos2 %}
+    <tr>
+      <td>{{ dato[1]}}</td>
+      <td>{{ dato[2] }}</td>
+      <td>{{ dato[0] }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+<!--Las siguientes lineas de codigo agregan el contador de filas en la tabla-->
+<script>
+  // Obtén la tabla por su ID
+  var tabla = document.getElementById("miTabla");
+
+  // Recorre las filas de la tabla (excluyendo la primera fila de encabezados)
+  for (var i = 1; i < tabla.rows.length; i++) {
+      // Crea una nueva celda en la primera columna de la fila y establece el número de fila
+      var nuevaCelda = tabla.rows[i].insertCell(0);
+      nuevaCelda.textContent = i; // Muestra el número de fila (1, 2, 3, ...)
+  }
+
+  // JavaScript para mostrar y ocultar la ventana emergente
+  var modal = document.getElementById('modal');
+  var openModal = document.getElementById('openModal');
+  var closeModal = document.getElementById('closeModal');
+  openModal.addEventListener('click', function() {
+      modal.style.display = 'block';
+  });
+  closeModal.addEventListener('click', function() {
+      modal.style.display = 'none';
+  });
+
+  var modal2 = document.getElementById('modal');
+  var openModal2 = document.getElementById('openModal2');
+  var closeModal2 = document.getElementById('closeModal2');
+  openModal2.addEventListener('click', function() {
+      modal.style.display = 'block';
+  });
+  closeModal2.addEventListener('click', function() {
+      modal2.style.display = 'none';
+  });
+</script>
+
+{% endblock %}

@@ -1,0 +1,531 @@
+.imagen {
+    width: 250px;
+    height: 250px;
+    border-radius: 25px;
+    box-shadow: 0px opx 20px rgba(red, green, blue, alpha);
+    text-align: center;
+    display: block;
+}
+
+table {
+    border-collapse: collapse;
+    width: 50%;
+}
+
+tbody, thead tr { display: block; }
+tbody {
+    height: 300px;
+    overflow-y: 50px;
+    overflow-x: hidden;
+}
+
+tbody td, thead th {
+    width: 240px;
+}
+
+th, td {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+/* .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+} */
+
+/* .modal-content {
+    background-color: rgb(228, 66, 66);
+    width: 300px;
+    padding: 20px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+} */
+
+.btn-text-right {
+    text-align: right;
+}
+
+#wrapper {
+    display: flex;
+    transition: margin-left 0.5s ease;
+}
+
+#main-content {
+    flex-grow: 1;
+    transition: margin-left 0.5s ease;
+    margin-left: 270px;
+    margin-right: 10px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+#wrapper.active #main-content {
+    margin-left: 20px;
+}
+
+#wrapper.active #sidebar {
+    left: -250px;
+}
+
+#sidebar {
+    position: fixed;
+    width: 250px;
+    height: 100%;
+    background: #151719;
+    left: 0;
+    transition: left 0.5s ease;
+    overflow-y: auto;
+}
+
+#sidebar ul li {
+    color: rgba(230, 230, 230, .9);
+    list-style: none;
+    padding: 15px 10px;
+    border-bottom: 5px solid rgba(100, 100, 100, .3);
+    text-align: center;
+}
+
+.logo {
+    border-radius: 50%;
+    display: absolute;
+    margin: 0 auto; 
+}
+
+#sidebar .toggle-btn {
+    position: fixed;
+    left: 30px;
+    top: 20px;
+    cursor: pointer;
+}
+
+#sidebar .toggle-btn span {
+    display: absolute;
+    width: 40px;
+    text-align: center;
+    font-size: 30px;
+    border: 3px solid #4ed8e2;
+}
+
+.toggle-btn {
+    position: fixed;
+    left: 30px;
+    top: 20px;
+    cursor: pointer;
+    transition: left 0.5s ease;
+}
+
+.toggle-btn span {
+    display: absolute;
+    width: 40px;
+    text-align: center;
+    font-size: 30px;
+    border: 3px solid #000000;
+}
+
+.active .toggle-btn {
+    left: 280px;
+}
+.main {
+    padding: 20px;
+}
+
+/* a.selected {
+    color: #ffffff;
+} */
+
+/* .selected:before {
+    content: '';
+    width: 3px;
+    height: 80%;
+    background: rgb(255, 255, 255);
+    position: absolute;
+    top: 10%;
+    left: -30px;
+} */
+
+/* .option {
+    display: flex;
+    align-items: center;
+    position: relative;
+    color: white;
+}
+
+.option1 {
+    display: flex;
+    align-items: center;
+    position: relative;
+    color: rgb(187, 17, 17);
+} */
+
+/* .boton {
+    display: flex;
+    align-items: center;
+    position: relative;
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+    border-block-end: #dddddd;
+} */
+
+/* hr {
+    height: 2px;
+    background-color: white;
+} */
+
+/* .menu__side_move {
+    width: 250px;
+} */
+
+#container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50vh;
+    margin: 0;
+}
+
+
+
+
+
+
+/* #menu {
+    width: 200px;
+    background-color: #f2f2f2;
+    padding: 10px;
+    border-right: 1px solid #ccc;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+} */
+
+#matriz {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 5px;
+    width: 90%;
+    margin: 20px;
+}
+
+.casilla {
+    width: 100%;
+    height: 50px;
+    border: 1px solid #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f9f9f9;
+    position: relative;
+}
+
+.objeto-en-casilla {
+    cursor: pointer;
+    padding: 8px;
+    border: 1px solid #cccccc; /* Borde del objeto */
+    background-color: #f9f9f9; /* Fondo del objeto */
+    position: relative;
+    margin-top: 5px;
+    user-select: none;
+    content: ''; /* Elimina cualquier texto que aparezca después del ícono */
+}
+
+
+/* .objeto-en-casilla img {
+    max-width: 100%;
+    height: auto;
+} */
+
+.eliminar-btn {
+    cursor: pointer;
+    color: red;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    display: none;
+}
+
+.objeto-en-casilla:hover .eliminar-btn {
+    display: block;
+}
+
+.nombre-input {
+    width: calc(100% - 20px); /* Ajustar el ancho del input */
+    margin-top: 5px;
+    box-sizing: border-box;
+}
+
+ /* Clase para permitir el arrastre */
+.draggable {
+    cursor: grab;
+}
+
+
+/* Estilos para mostrar los ID al pasar el mouse sobre los elemento tipo Input */
+  /* Estilos para el tooltip */
+[data-tooltip]::after {
+    content: attr(data-tooltip); /* Mostrar el contenido del atributo data-tooltip */
+    position: absolute; /* Posición absoluta con respecto al elemento */
+    top: -30px; /* Ajustar la posición vertical */
+    left: 50%; /* Ajustar la posición horizontal */
+    transform: translateX(-50%); /* Centrar horizontalmente */
+    background-color: #ffffff; /* Color de fondo del tooltip */
+    color: #fff; /* Color del texto del tooltip */
+    padding: 5px 10px; /* Espaciado interior */
+    border-radius: 5px; /* Borde redondeado */
+    font-size: 12px; /* Tamaño de fuente */
+    white-space: nowrap; /* Evitar envolver el texto */
+    opacity: 0; /* Ocultar inicialmente el tooltip */
+    transition: opacity 0.3s ease; /* Animación de transición */
+}
+
+/* Estilos para mostrar el tooltip cuando se pasa el mouse sobre el elemento */
+[data-tooltip]:hover::after {
+    opacity: 1; /* Mostrar el tooltip */
+}
+
+
+
+
+
+
+
+
+
+
+
+/* Las siguientes lineas corresponden al header */
+header {
+	width:100%; /* Establecemos que el header abarque el 100% del documento */
+	overflow:hidden; /* Eliminamos errores de float */
+	background:#252932;
+	margin-bottom:20px;
+    position: fixed;
+    z-index: 1000;
+}
+
+.wrapper2 {
+	width:90%; /* Establecemos que el ancho sera del 90% */
+	max-width:1000px; /* Aqui le decimos que el ancho máximo sera de 1000px */
+	margin:auto; /* Centramos los elementos */
+	overflow:hidden; /* Eliminamos errores de float */
+}
+
+header .logo {
+	color:#f2f2f2;
+	font-size:30px;
+	line-height:70px;
+	float:left;
+}
+
+header nav {
+	float:right;
+	line-height:70px;
+}
+
+header nav a {
+	display:inline-block;
+	color:#fff;
+	text-decoration:none;
+	padding:10px 20px;
+	line-height:normal;
+	font-size:15px;
+	font-weight:bold;
+	-webkit-transition:all 500ms ease;
+	-o-transition:all 500ms ease;
+	transition:all 500ms ease;
+}
+
+header nav a:hover {
+	background:#f56f3a;
+	border-radius:50px;
+}
+
+
+.header2 {
+	position: fixed;
+	height:70px;
+    z-index: 1000;
+}
+
+.header2 .logo {
+	line-height:70px;
+	font-size:30px;
+}
+
+.header2 nav {
+	line-height:70px;
+}
+/* permite adaptar el header a un dispositivo móvil. */
+
+@media screen and (max-width: 950px) {
+	header .logo,
+	header nav {
+		width:100%;
+		text-align:center; /*Centramos el menu y el logotipo*/
+		line-height:100px;
+	}
+
+	.header2 {
+		height:auto;
+	}
+
+	.header2 .logo,
+	.header2 nav {
+		line-height:50px;
+	}
+}
+
+
+
+
+
+/* Los siguientes estilos son los estilos del footer */
+  html {
+    min-height: 100%;
+    position: relative;
+  }
+  body {
+    margin: 0;
+    margin-bottom: 40px;
+  }
+  footer {
+    background-color: black;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 100px;
+    color: white;
+  }
+
+
+
+  /* Los siguinetes son lso estilos de la pagina agregar o borrar usuarios */
+
+  /* body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f0f0;
+} */
+
+.container2 {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 400px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+.form-group input[type="submit"] {
+    background-color: #0b4079;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.form-group input[type="submit"]:hover {
+    background-color: #04376d;
+}
+.alert {
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    margin-bottom: 15px;
+}
+
+
+/* Estilos para que la tabla sea responsiva */
+/* .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+} */
+
+@media screen and (max-width: 600px) {
+    .table-responsive table {
+        font-size: 14px;
+    }
+}
+
+/* Alineación del encabezado fijo */
+.table-responsive {
+    overflow-x: auto;
+    width: 100%;
+}
+  
+.table-responsive table {
+    width: 100%;
+}
+
+.table-responsive th,
+.table-responsive td {
+    white-space: nowrap;
+}
+
+ 
+/* Estilos para las graficas multiples */
+
+.chart-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.chart-wrapper {
+    width: 48%;
+    margin-bottom: 10px; /* Reducida la separación vertical */
+}
+
+.chart {
+    width: 100%;
+    height: 250px;
+}
+
+.chart-control {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.chart-control input {
+    margin-right: 5px;
+}
+
+/* Boton para resetear las graficas */
+.reset-button {
+    margin-left: 10px;
+    padding: 2px 5px;
+    font-size: 12px;
+}
+  
+
+  

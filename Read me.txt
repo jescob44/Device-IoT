@@ -1,0 +1,58 @@
+El código hasta este punto contiene lo siguiente:
+- Recibe datos del ESP32 los pone en una tabla y los grafica
+- Se agrega una dashboard para agregar los elementos y otra para visualizar
+- En la dashboard1 se modifica el código para que los elementos tipo Input tenga un nombre definido y no pueda ser modificado.
+- Se modifica el código html para que el contenido de la pagina se desplace hacia la derecha cuando se abre el menú lateral.
+- Se agregan los elementos Slider y Checkbox
+- Se oculta el icono borrar de todos los elementos en la pantalla de visualización.
+- Se corrige error que hacia que se guardara el icono de borrar varias veces en cada elemento, pero se detecta el mismo problema en otra parte, cuando se agrega un elemento y se recarga la pagina se agrega el código del icono de borrar varias veces.
+- Se corrige el nuevo punto de error del icono de borrar agregando las siguientes líneas.
+	if (nuevoElemento.querySelector(".eliminar-btn")) {
+                        nuevoElemento.querySelector(".eliminar-btn").remove();
+   	}
+- Se agregan tres sliders en la parte superior de la pantalla, estos sliders son fijos, es decir no se puede cambiar el nombre, el rango ni la cantidad.
+- Se modifica el código para enviar los datos de los sliders y los botones al mismo tiempo, se comprueba que los datos lleguen al esp32 y cambien la intensidad del led y enciendan y apaguen el led.
+- Se modifica la pagina para ver las graficas, la tabla de datos, los sliders y la matriz de elementos en una sola pagina.
+- Se intenta mostrar los datos enviados por el esp32 en la matriz en los elementos tipo input, pero solo funciona parcialmente.
+- 8-4-2024 Se corrige el siguiente error:
+	- Se encuentra un error que hace que el ID de los elementos cambie, los ID de los elementos tipo input queda en orden ascendente.
+- No se esta imprimiendo el valor en la celda indicada de la matriz.
+- Se agregan dos botones, el primero permite borrar los datos acumulados de los sensores y recarga la pagina y el segundo permite guardar los datos en un archivo de Excel.
+
+- 3-5-2024 Se logra lo siguiente:
+	- Se logra imprimir el valor de la celda en la matriz.
+	- Se modifica el generador de código para que muestre el código de ejemplo, antes tocaba buscar el archivo manualmente, ya no es así, se selecciona de unas opciones y se muestra.
+- 31-5-2024 Debido a que la ubicación de la celda donde se muestra el valor dentro de la matriz en ocasiones falla se intenta modificar esta, para ello se guardan el ID del elemento y las coordenadas dentro de la matriz en la variable 	inputElements, hasta el momento solo guarda los datos, pero la idea es usar estos para mostrar los datos en la ubicación correcta.
+- 16-6-2024 Se corrige error de ubicación al imprimir los datos en la matriz
+- 28-6-2024 Se agrega opción icono led en el menú lateral de la Dashboard, en la pagina de visualización se puede ver como cambian los colores (rojo y verde) de los leds al presionar un botón en el ESP32
+- 2-7-2024 Se corrige error en Mostrar datos, anteriormente al cargar un archivo salía un error de servidor, ahora sale el error pero en la misma pagina lo cual no representa problema ya que lo muestra en un cuadro de texto.
+- 2-7-2024 Se corrige comportamiento del menú lateral de tal manera que al presionar el botón del menú lateral desplace todo lo que hay en la pagina hacia un lado y cuando se desplace hacia abajo el menú lateral siempre estará visible.
+- 5-7-2024 Se corrige el siguiente error en Mostrar: GET http://192.168.100.138:6005/json_data 404 (NOT FOUND)  Este error se debía a que después de cargar los datos se seguía leyendo json_data y esto solo se debe de hacer una vez.
+- 8-7-2024 Se modifica el código de Flask para que cuando no encuentre un dato o este este vacío no salga error, para esto se usa la siguiente linea: dato1 = dato.get("input_1", 0)
+- 11-7-2024 Se modifica la hora de utc a gmt-5
+-- 14-7-2024 Se corrige error para controlar encendido de los leds
+- 19-7-2024 Se agregan mas columnas de datos, tanto de entradas análogas como digitales
+- 19-7-2024 Se modifican los tiempos de envió y recepción para mejorar la velocidad de respuesta
+- 21-7-2024 Se modifica el numero de columnas para tener 6 entradas análogas y 10 digitales, también se modifica en la pagina para mostrar datos la grafica para que ocupe el anchi de la pagina, también se depura un poco el código.
+- 22-7-2024 Se agrega footer y header, también se corrige error al cargar los datos y graficar(no escalaba bien la grafica)
+- 24-7-2024 Se modifica app_html4.py y se agrega usuarios.html para poder crear nuevos usuarios y borras los existentes, por ahora solo permite asignar un usuario y una contraseña, pero no se han creado los archivos exclusivos de cada usuario.
+- 26-7-2024 Se modifica usuarios.html mejorando los estilos pero aun falta evitar usuarios repetidos preguntas de confirmación al agregar o quitar usuarios, aun falta agregar los archivos propios de cada usuario.
+- 2-7-2024 Se cambia el lugar de almacenamiento de los elementos de la matriz del Dashboard, inicialmente guardaba todo en localstore, ahora lo guarda en txt y en localstore (ambas) con el nombre del usuario que esta en uso.
+- 2-8-2024 En el Dashboard ya no usa localstore ni para guardar ni para leer los elementos de la matriz, ya lo hace todo con un txt con el nombre del usuario respectivo
+- 2-8-2024 En la pagina de visualización de datos se modifica para que lee los elementos de la matriz desde un txt
+- 2-8-2024 Se agregan las opciones para que solo reciba los datos desde Arduino en le usuario especifico, en caso de no ser el usuario no toma los datos.
+- 29-8-2024 Se cambian los estilos en algunas de las pantallas para mejorar visualización.
+- 5-9-2024 Se corrigen errores en entrada y salida de datos y en la visualización de la grafica, ahora solo muestra los últimos 5 minutos de gráficos y se agrega una barra inferior para modificar el tiempo de visualización.
+- 6-9-2024 Se mejora la pantalla de generación de usuarios y se agrega tabla para mostrarlos, también se configuran correctamente los botones agregar y eliminar usuario, adicionalmente agrega botón para limpiar las celdas.
+- 8-9-2024 V33 Se corrigen varios problemas en la ventana de creación de usuarios, se agrega la función para evitar crear usuarios repetidos.
+- 15-9-2024 V34 Se modifica app_html4.py para que solo reciba datos del usuario correspondiente y los datos se guardan en un archivo txt con el nombre del usuario, falta modificar la parte de envía hacia el esp32 ya que desde cualquier usuario se puede enviar información y debe ser solo desde el usuario especifico.
+- 19-9-2024 V35 Se modifica app_html4.py para que al enviar datos hacia el ESP32 no envié los datos a todos los pero no es la solución ideal ya que envía el usuario y la contraseña para hacerlo.
+- 22-9-2024 V36 En gestión de usuarios se agrega el desplegable para seleccionar tipo de usuario aunque aun no esta conectado con el código de flask, se agrega color a los mensajes de alerta, verde para los exitosos y rojo para los fallidos, se reorganizan elementos, se deshabilita el menú superior y se organiza el menú lateral, faltaba opción agregar usuarios y se muestra el nombre del icono al pasar el mouse sobre este.
+- 25-9-2024 V37 Se modifica la visualización de gráficos, ahora son 6 gráficos y cada uno con un checkbox para mostrarlo u ocultarlo, se corrige problema con los usuarios, se agrego la opción reset a los gráficos pero aun no funciona bien.
+- 30-9-2024 V38 Se mejora funcionamiento del menú lateral como desplazamiento y superponer los textos también se corrige funcionamiento de graficas para que se auto escalen, aun falta corregir el cambio en los tiempos de visualización de las graficas y cuando hay varios usuarios al mismo tiempo hay problemas en el envió y recepción de datos.
+- 6/10/2024 V39 Se corrige el tiempo de visualización de las graficas, cuando hay varios usuarios al mismo tiempo hay problemas en el envió y recepción de datos.
+- 14-10-2024 Se modifica código para que corra desde wsl pero al hacerlo no permite conectar otros dispositivos, se modifica visualización de elementos como etiqueta e input tanto en el dashboard como en la pagina principal.
+- 28-10-2024 V40 Se hacen modificaciones visuales y se implementa funcionamiento con gunicorn, aun no se ha verificado con varios dispositivos conectados.
+- 30-11-2024 V41 Se modifica la opción Registrar para que se agregue el tipo de usuario al hacer un registro y que solo pueda acceder a la pantalla de registro los usuarios de tipo Administrador, se agrega un botón para generar el contenido de un correo electrónico con los datos del usuario y también se agrega botón de borrar a cada una de las filas de datos, adicionalmente se modifico para no pedir código de administrador para registrar usuario, solo queda para borrar.
+- 8-12-2024 V42 Se modifica la ventana Registrar, ahora permite modificar un usuario y se resuelven problemas como como doble verificación al actualizar usuario, solo falta agregar condición para crear usuario administrador y es que se agregue el código de administrador, también se corrige error al usar guicorn que tenia problema con los datos.
+. 1-1-2025 V43 Se corrigen algunos de los problemas en la sección de usuarios y se modifica el código para que solicite código de administrador para guardar usuarios administrador y para actualizar, aun tiene algunos problemas.

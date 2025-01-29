@@ -1,0 +1,159 @@
+/*Nombre: DHT WiFi
+  Descripcion: Este programa lee el sensor de temperatura DHT11 conectado en el pin
+  33 de un ESP32, envia estos datos en formato json a un servidor Flask por medio del protocolo HTTP(POST).
+*/
+
+//Librerias
+#include "DHT.h"
+#include <WiFi.h>
+#include <base64.h> // Esta libreria se usa para codificar el usuario y la contraseña
+#include <ArduinoJson.h>
+
+//Etiquetado de pine I/O
+#define DHTPIN 13
+//#define DHTPIN 33
+
+//Constantes
+#define DHTTYPE DHT11
+const unsigned long TIEMPO_MEDIDA = 1000; // Define cada cuanto tiempo toma los datos
+const unsigned long TIEMPO_ENVIO_WIFI = 100;  // Define cada cuanto tiempo envia los datos
+
+String user = "Alex"; //  Usuario de la plataforma
+String pass = "alex1";  //  Contraseña de la plataforma
+String encoded = base64::encode(user + ":" + pass);
+
+const char* WIFI_SSID = "IoT-B19";  // Nombre red wifi
+const char* WIFI_PASS = "lcontrol2020*";  // Clave red wifi
+const char* HTTP_HOST = "192.168.100.116";
+
+//  const char* WIFI_SSID = "DIR-615-88C2.2";
+//  const char* WIFI_PASS = "10770686";
+//  const char* HTTP_HOST = "192.168.1.2";//IP Casa
+
+//  const char* WIFI_SSID     = "SOTO_DE_ES";
+//  const char* WIFI_PASS = "22108260";
+//  const char* HTTP_HOST = "192.168.1.73";//IP rionegro
+
+//  const char* WIFI_SSID     = "Alex";
+//  const char* WIFI_PASS = "ros2020*";
+//  const char* HTTP_HOST = "192.168.43.213";//IP datos Alex
+
+const int HTTP_PORT = 6005;
+
+//Variables
+float input_1 = 0;
+float input_2 = 0;
+unsigned long tiempoMedida = 0;
+unsigned long tiempoWifi = 0;
+
+DHT dht(DHTPIN, DHTTYPE);
+WiFiClient client;
+
+String payload = "";
+
+//Subrutinas y/o funciones
+void leerDht() {
+  if (millis() - tiempoMedida >= TIEMPO_MEDIDA) {
+
+    float tempLocal = dht.readTemperature();
+    float humLocal = dht.readHumidity();
+    if (!isnan(tempLocal)) input_1 = tempLocal;
+    if (!isnan(humLocal)) input_2 = humLocal;
+    tiempoMedida = millis();
+  }
+}
+
+void wifiInit() {
+  delay(10);
+
+  // We start by connecting to a WiFi network
+
+  Serial.println();
+  Serial.println();
+  Serial.print("[WiFi] Connecting to ");
+  Serial.println(WIFI_SSID);
+
+  WiFi.begin(WIFI_SSID, WIFI_PASS);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("");
+  Serial.println("[WiFi] WiFi connected");
+  Serial.print("[WiFi] IP address: ");
+  Serial.println(WiFi.localIP());
+}
+
+void wifiPost() {
+  Serial.print("[HTTP] connecting to ");
+  Serial.println(HTTP_HOST);
+  if (!client.connect(HTTP_HOST, HTTP_PORT)) {
+    Serial.println("[HTTP] connection failed");
+    return;
+  }
+  // body contiene todo la informacion que se envia desde el ESP32 a la plataforma, se puede modificar agregando o eliminando datos, pero debe de mantener el formato.
+  String body = "{\"input_1\":" + String(input_1) + ",\"input_2\":" + String(input_2) + "}\r\n\r\n";
+  Serial.println(body);
+  // url contine la informacion del body, la dreccion de la pagina, los datos de acceso entre otros datos
+  String url = "POST /data HTTP/1.1\r\n";
+  url += "Host: " + String(HTTP_HOST) + ":" + String(HTTP_PORT) + "\r\n";
+  url += "Content-Type: application/json\r\n";
+  url += "Connection: close\r\n";
+  url += "Accept: application/json\r\n";
+  //Agregar header Authorization: (base64 de  user:pass)
+  url += "Authorization: Basic ";
+  url += encoded + "\r\n";
+  url += "Content-Length: " + String(body.length()) + "\r\n\r\n";
+  url += body;
+  client.print(url);
+  unsigned long timeout = millis();
+  while (client.available() == 0) {
+    if (millis() - timeout > 5000) {
+      Serial.println("[HTTP] Client Timeout !");
+      client.stop();
+      return;
+    }
+  }
+  Serial.println();
+  Serial.println("[HTTP] closing connection");
+}
+
+void getData(WiFiClient& client, const char* host, int port) {
+  String footer = " HTTP/1.1\r\n";
+  footer += "Host: " + String(host) + "\r\n";
+  footer += "Connection: close\r\n";
+  footer += "Accept: application/json\r\n\r\n";
+  if (!client.connect(host, port)) {
+    Serial.println("[WiFi] Could not connect");
+    return;
+  }
+  String sendString = "GET /data/" + footer;
+  client.print(sendString);
+}
+
+void setup() {
+  //Configurar entradas digitales
+
+
+  // Limpieza de salidas
+
+
+  //Inicio de comunicaciones
+  Serial.begin(115200);
+  dht.begin();
+  wifiInit();
+  //Limpieza de temporizadores
+  tiempoMedida = millis();
+  tiempoWifi = millis();
+}
+
+void loop() {
+  leerDht();
+  if (millis() - tiempoWifi >= TIEMPO_ENVIO_WIFI) {
+    wifiPost();
+    getData(client, HTTP_HOST, HTTP_PORT);
+    tiempoWifi = millis();
+  }
+}

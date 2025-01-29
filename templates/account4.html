@@ -1,0 +1,876 @@
+<!-- Este codigo contiene la parte de visualizacion de los datos he interaccion con la matriz  -->
+<!-- Extend flask layout.html -->
+{% extends 'layout4.html' %} {% block content %}
+
+<!-- <hr>
+<h1 align='center'>Device IoT Eafit</h1>
+<hr> -->
+
+<br><br>
+
+<!-- Generar la tabla para mostrar los datos -->
+<div class="container">
+  <h2 align='center'>Datos sensores</h2>
+
+  <!-- <h5 align='center'>Tabla de datos de sensores</h5> -->
+  <div class="row">
+    <div class="col mb-3">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Tabla de datos</h5>
+          <div class="table-responsive" style="max-height: 600px">
+            <table id="table-data" class="table table-striped table-sm">
+              
+              <tbody>
+                
+               
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Timestamp</th>
+                    <!-- Generar encabezados dinámicamente -->
+                    {% for i in range(1, 7) %}
+                      <th scope="col">Input {{ i }}</th>
+                    {% endfor %}
+                    {% for i in range(1, 11) %}
+                      <th scope="col">Dig {{ i }}</th>
+                    {% endfor %}
+                  </tr>
+                
+                
+                  {% for data in data %}
+                  <tr>
+                    <th scope="row">{{ loop.index }}</th>
+                    {% for value in data %}
+                      <td>{{ value }}</td>
+                    {% endfor %}
+                  </tr>
+                  {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <!-- Show a bootstrap table example with mockup content-->
+    </div>
+    <hr>
+    <br>
+    <div class="col mb-3">
+      <div class="card">
+        <div class="card-body">
+          <center><h5 class="card-title">Gráfico de datos</h5></center>
+          <div class="chart-container">
+            {% for i in range(1, 7) %}
+            <div class="chart-wrapper">
+              <div class="chart-control">
+                <input type="checkbox" id="checkbox{{ i }}" checked onchange="toggleChart({{ i }})">
+                <label for="checkbox{{ i }}">Input {{ i }}</label>
+                <!-- <button class="reset-button" onclick="resetChart({{ i }})">Reset</button> -->
+                <!-- <button onclick="resetChart()" class="reset-button">Reset</button> -->
+                <button onclick="resetChart()" class="reset-button px-2 py-1 text-xs font-medium text-gray-600 border border-gray-300 rounded hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors duration-200">
+                  Reset
+                </button>
+                
+              </div>
+              <div id="graph{{ i }}" class="chart"></div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+<!-- <h3 align='center'>Guardar o borrar datos</h3> -->
+<!-- Centrar los botones -->
+<!-- <div class="d-flex justify-content-center"> -->
+  <!-- Botón para guardar los datos del localStorage -->
+  <!-- <button onclick="guardarDatos()" style="margin-right: 10px;" >Guardar datos</button> -->
+  <!-- Botón para borrar los datos del localStorage -->
+  <!-- <button onclick="confirmarBorrado()" style="margin-left: 10px;" >Borrar datos</button>
+</div> -->
+
+
+
+<!-- Contenedor principal para alinear el ancho de todos los elementos -->
+<div class="container-fluid px-4">
+  <div class="row justify-content-center">
+    <div class="col-12" style="max-width: 1200px;"> <!-- Ajusta este valor según el ancho de tu matriz -->
+      
+      
+
+      <!-- Sección de guardar o borrar datos -->
+      <div class="card mb-5">
+        <div class="card-body">
+          <h3 class="card-title text-center mb-4">Guardar o borrar datos</h3>
+          <div class="d-flex justify-content-center">
+            <button onclick="guardarDatos()" class="btn btn-primary mr-2" style="margin-right: 15px;" >Guardar datos</button>
+            <button onclick="confirmarBorrado()" class="btn btn-danger ml-2">Borrar datos</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección de sliders -->
+      <div class="card mb-5">
+        <div class="card-body">
+          <h3 class="card-title text-center mb-4">Controles de sliders</h3>
+          <div class="container-fluid px-0">
+            {% for i in range(1, 4) %}
+              <div class="row mb-3">
+                <div class="col-md-3">
+                  <label for="checkbox{{ i }}">Slider {{ i }}</label>
+                </div>
+                <div class="col-md-1">
+                  <div class="custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" id="checkbox{{ i }}" onchange="toggleSliderVisibility('rangeInput{{ i }}', 'checkbox{{ i }}')">
+                    <label class="custom-control-label" for="checkbox{{ i }}"></label>
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <div id="sliderContainer{{ i }}" style="display: none;">
+                    <input type="range" class="custom-range" id="rangeInput{{ i }}" value="0" min="0" max="100" onInput="updateValues(this.value, 'slider{{ i }}', 'sliderValue{{ i }}', 'externalSliderValue{{ i }}')">
+                    <output id="slider{{ i }}" class="ml-1">0</output>
+                    <input type="hidden" id="sliderValue{{ i }}" value="0">
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Matriz  de elementos-->
+<div class="card mb-5">
+  <div class="card-body">
+    <h3 class="card-title text-center mb-4">Matriz de elementos</h3>
+    <div id="matriz" class="mb-5">
+      <!-- ... (contenido de la matriz) ... -->
+    </div>
+  </div>
+</div>
+
+
+
+
+<hr>
+<!-- script para guardar los datos en un txt y para borrar el localstore -->
+<script>
+  // Función para guardar los datos en un archivo CSV
+  function guardarDatos() {
+    // Obtener la tabla de datos
+    var table = document.getElementById("table-data");
+    
+    // Inicializar la cadena de texto con el encabezado de las columnas
+    var csv = "timestamp,input_1,input_2,input_3,input_4,input_5,input_6,dg1,dg2,dg3,dg4,dg5,dg6,dg7,dg8,dg9,dg10\n";
+
+    // Recorrer cada fila de la tabla (empezando desde la segunda fila para omitir el encabezado)
+    for (var i = 1; i < table.rows.length; i++) {
+        var row = table.rows[i];
+        // Recorrer cada celda de la fila
+        for (var j = 1; j < row.cells.length; j++) {
+            // Agregar el valor de la celda a la cadena CSV
+            csv += row.cells[j].textContent;
+            if(j + 1 < row.cells.length)
+            {
+              csv += ",";
+            }
+        }
+        // Agregar un salto de línea al final de cada fila (excepto la última)
+        csv += "\n";
+    }
+
+    // Crear un objeto Blob con la cadena CSV
+    var blob = new Blob([csv], { type: "text/plain;charset=utf-8" });
+
+    // Crear un enlace de descarga
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+
+    // Establecer el nombre de archivo
+    a.download = "datos.csv";
+
+    // Simular un clic en el enlace de descarga
+    a.click();
+  }
+
+  // Función para confirmar el borrado de los datos
+  function confirmarBorrado() {
+    // Mostrar una ventana de confirmación antes de borrar los datos
+    var confirmacion = confirm("¿Estás seguro de que quieres borrar los datos? Esta acción no se puede deshacer.");
+
+    // Si el usuario confirma, borrar los datos
+    if (confirmacion) {
+      borrarDatos();
+    }
+  }
+
+  // Función para borrar los datos de la tabla
+  function borrarDatos() {
+    fetch('/borrar_datos', {
+        method: 'POST',
+    })
+    .then(response => {
+        if (response.ok) {
+            // Si la solicitud fue exitosa, borrar los datos del cliente también
+            data = [];
+            console.log('Datos borrados exitosamente');
+            // Actualizar la página
+            location.reload(); // Recargar la página
+        } else {
+            console.error('Error al borrar los datos');
+        }
+    })
+    .catch(error => {
+        console.error('Error al borrar los datos:', error);
+    });
+  }
+</script>
+
+<!-- Script de los sliders -->
+<script>
+  // Variable global para almacenar el nombre del botón
+  var nombreBotonGlobal;
+  // Función para mostrar u ocultar los sliders según el estado del checkbox
+  function toggleSliderVisibility(sliderId, checkboxId) {
+      var sliderContainer = document.getElementById("sliderContainer" + sliderId.slice(-1));
+      var checkbox = document.getElementById(checkboxId);
+      if (checkbox.checked) {
+          sliderContainer.style.display = "block";  // Mostrar el slider
+      } else {
+          sliderContainer.style.display = "none";   // Ocultar el slider
+      }
+  }
+  
+  // Función para actualizar los valores de los sliders y cuadros de texto
+  function updateValues(value, outputId, inputId, externalInputId, nombreBoton) {
+      document.getElementById(outputId).value = value;
+      document.getElementById(inputId).value = value;
+      document.getElementById(externalInputId).value = value;
+
+      var slider1Value = document.getElementById("slider1").textContent;
+      var slider2Value = document.getElementById("slider2").textContent;
+      var slider3Value = document.getElementById("slider3").textContent;
+
+      enviarDatosAlServidor(nombreBotonGlobal, slider1Value, slider2Value, slider3Value);
+  }
+  // Función para enviar los valores al servidor
+  function enviarDatosAlServidor(nombreBotonGlobal, slider1Value, slider2Value, slider3Value) {
+    var data = {
+      "slider1": slider1Value,
+      "slider2": slider2Value,
+      "slider3": slider3Value,
+      [nombreBotonGlobal]: 1
+    };
+    // Enviar los datos al servidor
+    console.log("Enviando datos al servidor:", data);
+    fetch('/guardar_estado_botones', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    })
+    .then(response => response.json())
+    .then(data => {
+    })
+    .catch((error) => {
+        console.error('Error al enviar datos al servidor:', error);
+    });
+  } 
+  
+</script>
+<!-- Cuadro de texto externo para el primer slider -->
+<!-- Valor del primer slider externo: -->
+<input type="text" id="externalSliderValue1" value="" readonly visibility: hidden>
+<!-- Cuadro de texto externo para el segundo slider -->
+<!-- Valor del segundo slider externo: -->
+<input type="text" id="externalSliderValue2" value="" readonly visibility: hidden>
+<!-- Cuadro de texto externo para el tercer slider -->
+<!-- Valor del tercer slider externo: -->
+<input type="text" id="externalSliderValue3" value="" readonly visibility: hidden>
+
+<!-- Matriz para los elementos -->
+<div id="matriz" class="matriz">
+  <!-- ... Contenido de la matriz ... -->
+</div>
+
+
+<div>
+  <h2>Lista de elementos faltantes o modificaciones pendientes </h2>
+  <!-- <li>Falta modificar la recepcion de datos, en el momento se recibe y asigna dependiendo de la columna, se debe cambiar a que dependa del nombre</li> -->
+  <li>En el Dashboard falta corregir la asignacion de ID, como esta estos se pueden repetir</li>
+  <!-- <li>Elemento led ya fue agregado, solo falta modificar la asignacion del ID ya sea manual o automatica</li> -->
+  <li>Modificar los script de javascript para que se carguen desde la carpeta scripts y no esten dentro del codigo.</li>
+  <!-- <li>En mostrar datos despues de cargar un archivo aparece el siguiente error. GET http://192.168.100.138:6005/json_data 404 (NOT FOUND)</li> -->
+  <li>Hay que modificar tanto la grafica como la tabla para el caso de usar menos de 4 datos, solo mostrar en la tabla la cantidad de datos usados y sin columnas de ceros.</li>
+  <!-- <li>Los led presentan un problema, cuando los pongo en orden funciona correctamente, pero si los pongo en desorden un me salto uno los siguientes no cambian de color.</li> -->
+  <!-- <li>Importa csv incluir todos datos en cargar datos, grafico solo analogas</li> -->
+  <!-- <li>Mejorar estilos</li> -->
+  <li>logo nombre proyecto arriba izquierda</li>
+  <!-- <li>agregar footer con el nombre de la universidad y el año(quitar logo eafit)</li> -->
+  <!-- <li>Header estatico en la parte superior y que ocupe todo un borde</li> -->
+  <!-- <li>Logo por cada vista cuando colapsar</li> -->
+  <!-- <li>http client get, post,.... ya viene instalada</li> -->
+  <!-- <li>La cantidad de entradas analogas debe ser 6</li> -->
+  <!-- <li>La cantidad de entradas digitales debe ser 10</li> -->
+  <!-- <li>modificar visualizacion de las columnas de datos, solo mostrar las que tienen datos, las otras ocultarlas</li> -->
+  <!-- <li>fetch guardar datos</li> -->
+  <!-- <li>crear metodo para heredar los datos de los usuarios no cargar dato constante (linea 61 app_html4.py) </li> -->
+
+  <!-- <li>Agregar funciones para crear usuario, editar usuario y borrar usuario</li> -->
+  <!-- <li>agregar al dashboar los 3 botones anteriores</li> -->
+  <li>Cuando se crea o se borra un usuario se deben crear o borrar los archvios que contienen los datos, tanto de los elementos en la matriz como la de los datos</li>
+  <!-- <li>verificar si el usuario es admin, en caso contrario no ingresar al menu Registrar</li> -->
+  <!-- <li>Limitar el tiempo que se muestran los datos en la grafica para que la grafica sea mas limpia</li> -->
+  <!-- <li>Ajustar la grafica para que se expanda a todo el ancho de la pantalla</li> -->
+  <li>Mantener encabezado de la matriz</li>
+  <!-- <li>Cambiar el punto de almacenamiento de los datos, no usar localstore, pasarlos a un txt</li> -->
+  <!-- <li>El footer en cargar csv no se queda al final de la pagina</li> -->
+  <!-- <li>Tiempos de envio y recepcion son lentos, verificar a que se debe</li> -->
+ 
+
+
+
+  <li>Usuario no existente libreria toastR, libreria para notificaciones</li>
+  <!-- <li>Agregar tooltip con los nombres a los iconos de la izquierda</li> -->
+  <!-- <li>Agregar * a los campos requeridos y una nota en la parte inferior</li> -->
+  <!-- <li>cambiar la notificacion de usuario registrado a verde(success)</li> -->
+
+  <!-- <li>Quitar menu superior y poner logo en la parte superior</li> -->
+  <!-- <li>Quitar hora fecha y otros</li> -->
+  <!-- <li>Header pequeño 50px</li> -->
+  <!-- <li>Codigos ejemplo modificar tamaño botones</li> -->
+  <li>Pasar de backend al frontend las llaves de la tabla para solo mostrar las columnas existentes</li>
+  <!-- <li>simplificar timestamp,quitar milisegundos</li> -->
+  <!-- <li>Cambiar el grafico a pestañas o matriz, esto para poder verlo en la escala corrrecta</li> -->
+  <!-- <li>Variable datos_matriz corregir</li> -->
+  <!-- <li>Reset a configuracion de grafico</li> -->
+  <!-- <li>En las graficas es necesario corregir el cambio con la barra de tiempo ya que no funciona bien, dejar solo una barra de tiempo y un solo boton de reset</li> -->
+  <!-- <li>Corregir datos_matriz para filtrar solo los datos del usuario dataframe.filter(user=correntUserDeco), en java filtrar solo los datos de este usuario</li> -->
+  <!-- <li>En la seccion agregar usuario agregar la opcion de modificar</li> -->
+  <li>En la seccion agregar usuario permitir borrar varios usuarios a la vez</li>
+  <li>En la seccion agregar usuario quitar ID y agregar tipo de usuario (Administrador, Empleado, Profesor, Estudiante)</li>
+  <li>En la seccion app_html4 en register quitar ID y agregar tipo de usuario</li>
+  <!-- <li>En la seccion agregar usuario agregar boton para generar correo</li> -->
+  <li>¿Debo digitar la clave de administrador para borrar usuarios?</li>
+  <li>Para registrar usuarios administrador se debe usar la clave de administrador</li>
+
+
+</div>
+<br>
+<br>
+
+{% endblock %}
+{% block scripts %}
+<!-- Script para poder usar la matriz, aqui se define el tamaño de la matriz y los elementos que se pueden agregar  -->
+<script>
+  // console.log(localStorage.getItem("objetos"));
+  // console.log("Contenido actual de localStorage:");
+  // console.log(localStorage.getItem("elementos"));
+
+  // Objeto para almacenar el estado de los botones
+  var estadoBotones = {};
+  
+  document.addEventListener("DOMContentLoaded", function () {
+    var matriz = document.getElementById("matriz");
+    var elementos = {}; // Objeto para almacenar los elementos input_1 e input_2
+    // Crear la matriz
+    for (var i = 0; i < 6; i++) {
+        for (var j = 0; j < 6; j++) {
+            var casilla = document.createElement("div");
+            casilla.className = "casilla";
+            casilla.dataset.row = i;
+            casilla.dataset.col = j;
+            matriz.appendChild(casilla);
+        }
+    }
+
+    // Agregar elemento en la matriz
+    // Esta función toma un elemento HTML y una casilla como parámetros. 
+    // Clona el elemento, le agrega un botón de eliminar, y lo agrega a la casilla.
+    function agregarElementoEnCasilla(elemento, casilla, nombreBoton) {
+        if (elemento && casilla) {
+            var nuevoElemento = elemento.cloneNode(true);
+            nuevoElemento.classList.remove("objeto-en-casilla");
+            nuevoElemento.classList.add("objeto-en-casilla");
+            elementos[nombreBoton] = nuevoElemento;
+
+            nuevoElemento.addEventListener("click", function (event) {
+                // Verificar si el elemento clicado es un botón
+                if (event.target.tagName === 'BUTTON') {
+                    nombreBotonGlobal = event.target.textContent;
+                    var espacioTexto = document.getElementById("btn_1");
+                    espacioTexto.value = event.target.textContent;
+                    // Actualizar el estado del botón a 1 al hacer clic
+                    estadoBotones[event.target.textContent] = 1;
+                    guardarEstadoBotones();
+                    var slider1Value = document.getElementById("slider1").textContent;
+                    var slider2Value = document.getElementById("slider2").textContent;
+                    var slider3Value = document.getElementById("slider3").textContent;
+                    // Llamar a la función para enviar datos al servidor con el nombre del botón
+                    enviarDatosAlServidor(event.target.textContent, slider1Value, slider2Value, slider3Value);
+                }
+            });
+            casilla.appendChild(nuevoElemento);
+        }
+    }
+
+    function cargarElementos() {
+      fetch('/cargar_datos')
+          .then(response => response.json())
+          .then(data => {
+              var elementosJSON = data.elementos;
+
+              if (elementosJSON) {
+                // console.log("Elementos cargados:", elementosJSON);
+                var elementosGuardados = JSON.parse(elementosJSON);
+                for (var i = 0; i < elementosGuardados.length; i++) {
+                  if (elementosGuardados[i]) {
+                    var elemento = parseHTML(elementosGuardados[i]);
+                    var casilla = matriz.getElementsByClassName("casilla")[i];
+                    agregarElementoEnCasilla(elemento, casilla);
+                    
+                    // Para evitar que se muestre el botón de eliminar al cargar los elementos se usan las
+                    // siguientes líneas
+                    var iconoBorrar = casilla.querySelector(".eliminar-btn");
+                    if (iconoBorrar) {
+                      iconoBorrar.setAttribute("hidden", true);
+                      iconoBorrar.style.display = "none";
+                    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    // //////////////////////////////////////////////////////////////////////////
+                    // // Para evitar que se muestre el texto que acompaña el icono se hace lo siguiente
+                    // // La siguiente variable se encarga de buscar los elementos tipo icono
+                    var led = casilla.querySelector("icon");
+                    // Una vez encontrado el icono se oculta solo el nombre, elemento icono se muestra
+                    // console.log("led: ", led);
+                    if (led) {
+                      // Ahora, para ocultar el texto pero mostrar el icono se hace lo siguiente
+                      // Se busca el texto que acompaña al icono
+                      led.textContent.display = "hidden";
+                      // led.textContent = "hidden";
+
+                      // Para evitar que se muestre el texto que acompaña el icono se hace lo siguiente
+                      // led.textContent.setAttribute("hidden", true);
+                      // led.textContent.display = "none";
+                    }
+                    // //////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+                   
+                  }
+                  
+                    // //////////////////////////////////////////////////////////////////////////
+                    // // Para evitar que se muestre el texto que acompaña el icono se hace lo siguiente
+                    // // La siguiente variable se encarga de buscar los elementos tipo icono
+                    // var led = casilla.querySelector("icon");
+                    // // Una vez encontrado el icono se oculta solo el nombre, elemento icono se muestra
+                    // // console.log("led: ", led);
+                    // if (led) {
+                    //   // Ahora, para ocultar el texto pero mostrar el icono se hace lo siguiente
+                    //   // Se busca el texto que acompaña al icono
+                    //   led.textContent.display = "hidden";
+                    //   console.log("led nombre: ", led.textContent);
+                    //   // led.textContent = "hidden";
+
+
+                    //   // Para evitar que se muestre el texto que acompaña el icono se hace lo siguiente
+                    //   led.textContent.setAttribute("hidden", true);
+                    //   led.textContent.style.display = "none";
+                    // }
+                    // //////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+                   
+                  
+                }
+              }
+          })
+          .catch((error) => {
+              console.error('Error al cargar los datos:', error);
+          });
+    }
+    // Función para convertir una cadena HTML en un elemento DOM
+    function parseHTML(html) {
+      var tmp = document.implementation.createHTMLDocument();
+      tmp.body.innerHTML = html;
+      return tmp.body.firstChild;
+    }
+    // Cargar elementos al cargar la página
+    cargarElementos();
+    // Función para guardar el estado de los botones en localStorage
+    function guardarEstadoBotones() {
+      var estadoBotonesJSON = JSON.stringify(estadoBotones);
+      localStorage.setItem("estadoBotones", estadoBotonesJSON);
+    } 
+  });  
+
+  function actualizarInputValues() {
+    // Obtener la última fila de la tabla de datos, estos son los datos recibidos desde el Esp32 y se van a visualizar en la matriz
+    var ultimaFila = document.getElementById("table-data").querySelector("tbody tr:last-child");
+    
+    var casilla = document.getElementsByClassName("casilla");
+    
+    // Selecciona todas las casillas
+    const casillas = document.querySelectorAll('.casilla');
+    // Vector para alamacenar los valores de las columnas 3, 4, 5 y 6 
+    var inputValue3 = [];
+    // El valor limite del for depende de la cantidad de datos recibidos desde el ESP32
+    for(var i = 3; i < 19; i++)
+    {
+      var child = "td:nth-child(" + i + ")";
+      if(ultimaFila.querySelector(child))
+      {
+        inputValue3[i-3] = ultimaFila.querySelector(child).textContent;
+      }
+    }
+    
+    // Itera sobre las casillas
+    casillas.forEach((casilla, index) => {
+      // Las siguientes lineas se encargan de hacer cambiar el color del icono dependiendo de un valor de entrada
+      // Acceder al elemento por contenido de texto
+      var iconos = document.querySelectorAll("icon");
+      
+      // Debo organizar esta parte para corregir error de asignacion de leds
+      for (var i = 0; i < iconos.length; i++) {
+        for (var l = 1; l < 20; l++) {          
+          var led = "d"+(l);
+          if (iconos[i].textContent === led) {
+            console.log("iconos: ", iconos[i].textContent, "  i: ", i, "   inputValue3[5+l]: ", inputValue3);
+            if(inputValue3[5+l] == "1")
+            {
+              iconos[i].style.color = "red";
+            }
+            else
+            {
+              iconos[i].style.color = "black";
+              // iconos[i].textContent.style.visibility = "hidden";
+              
+            }
+          }
+        }
+        // iconos[i].textContent = " ";
+      }
+
+      // Las siguientes lineas se encargan de hacer que los valores se muestren en los elementos tipo input 
+      // Dentro de cada casilla, selecciona el div con la clase "elemento-container objeto-en-casilla"
+      const elementoContainer = casilla.querySelector('.elemento-container.objeto-en-casilla');
+      if (elementoContainer) {
+        // Selecciona el input dentro de elementoContainer
+        const input = elementoContainer.querySelector('input.form-control');
+        // Verifica si el input existe
+        if (input) {
+          for(var i = 3; i < 9; i++)
+          {
+            for(var k = 0; k < 6; k++)
+            {
+              if (elementoContainer.id == "input_"+(k+1)) {
+                const ID = elementoContainer.id;
+                // Escribe el valor en el input
+                input.value = inputValue3[k];
+              } 
+            }
+          }
+        }
+      }
+    });
+  }
+    // Actualizar los valores de input_1 e input_2 cada segundo
+    setInterval(actualizarInputValues, 1000);
+</script>
+
+<!-- Script usado para mostrar los datos en el grafico-->
+<script type="text/javascript">
+  var data = {{ data|tojson }};
+  var charts = [];
+  var chartOptions = [];
+  var zoomStates = [];
+
+  // Función para redimensionar los gráficos al cambiar el tamaño de la ventana
+  function resizeCharts() {
+    charts.forEach(chart => chart.resize());
+  }
+
+  window.addEventListener('resize', resizeCharts);
+
+
+  function createChartOption(sensorName) {
+    return {
+      animation: false,
+      title: {
+        text: sensorName,
+        left: 'center'
+      },
+      grid: {   // Ajustar el tamaño del gráfico
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+      },
+      tooltip: {
+        trigger: "axis",
+        axisPointer: {
+          animation: false
+        }
+      },
+      xAxis: {
+        type: "time",
+        splitLine: {
+          show: true
+        }
+      },
+      yAxis: {
+        type: "value",
+        boundaryGap: [0, '10%'],
+        splitLine: {
+          show: true
+        }
+      },
+      series: [
+        { name: sensorName, type: "line", showSymbol: false, data: [] }
+      ],
+      dataZoom: [
+        {
+          type: 'slider',
+          show: true,
+          xAxisIndex: [0],
+          start: 0,
+          end: 100
+        },
+        {
+          type: 'inside',
+          xAxisIndex: [0],
+          start: 0,
+          end: 100
+        }
+      ]
+    };
+  }
+  // Funcion para crear las graficas
+  for (var i = 1; i <= 6; i++) {
+    var chart = echarts.init(document.getElementById("graph" + i));
+    var option = createChartOption("Input " + i);
+    charts.push(chart);
+    chartOptions.push(option);
+    chart.setOption(option);
+
+    chart.on('datazoom', syncZoom);
+  }
+  // Funcion para sincronizar el zoom de las graficas
+  function syncZoom(params) {
+    var start = params.batch ? params.batch[0].start : params.start;
+    var end = params.batch ? params.batch[0].end : params.end;
+
+    charts.forEach((chart) => {
+      chart.setOption({
+        dataZoom: [{
+          start: start,
+          end: end
+        }, {
+          start: start,
+          end: end
+        }]
+      }, false); // El segundo parámetro 'false' evita un repintado completo
+    });
+
+    // Actualizar todas las gráficas de una vez
+    charts.forEach(chart => chart.getZr().refresh());
+  }
+
+  // Funcion para actualizar la tabla y para el Tiempo en minutos para mostrar los datos en la gráfica
+  function updateChartAndTable(newData) {
+    var now = new Date().getTime();
+    var timeRangeMs = 5 * 60 * 1000; // 5 minutos por defecto
+    var startTime = now - timeRangeMs;
+
+    var filteredData = newData.filter(function(item) {
+      return new Date(item[0]).getTime() >= startTime;
+    });
+
+    charts.forEach((chart, index) => {
+      var sensorData = filteredData.map(function(item) {
+        return [new Date(item[0]).getTime(), item[index + 1]];
+      });
+
+      var currentZoom = chart.getOption().dataZoom[0];
+
+      chart.setOption({
+        series: [{
+          data: sensorData
+        }],
+        dataZoom: [{
+          start: currentZoom.start,
+          end: currentZoom.end
+        }, {
+          start: currentZoom.start,
+          end: currentZoom.end
+        }]
+      }, false);
+    });
+
+    // Actualizar todas las gráficas de una vez
+    charts.forEach(chart => chart.getZr().refresh());
+
+    updateTable(filteredData);
+  }
+
+  function updateTable(data) {
+    var tableBody = $("#table-data tbody");
+    tableBody.empty();
+
+    var headerRow = "<tr><th>#</th><th>Timestamp</th>";
+    for (var i = 1; i <= 6; i++) {
+      if (data[0] && data[0][i] !== undefined) {
+        headerRow += "<th>Input " + i + "</th>";
+      }
+    }
+    for (var i = 7; i <= 16; i++) {
+      if (data[0] && data[0][i] !== undefined) {
+        headerRow += "<th>Dig " + (i - 6) + "</th>";
+      }
+    }
+    headerRow += "</tr>";
+    tableBody.append(headerRow);
+
+    data.forEach(function(row, index) {
+      var newRow = "<tr><th scope='row'>" + (index + 1) + "</th>";
+      row.forEach(function(value, colIndex) {
+        if (colIndex === 0 || value !== undefined) {
+          newRow += "<td>" + value + "</td>";
+        }
+      });
+      newRow += "</tr>";
+      tableBody.append(newRow);
+    });
+  }
+
+  function fetchAndUpdateData() {
+    $.getJSON($SCRIPT_ROOT + '/data', function(newData) {
+      updateChartAndTable(newData);
+    });
+  }
+
+  setInterval(fetchAndUpdateData, 1000);
+  fetchAndUpdateData();
+
+  function toggleChart(index) {
+    var chartElement = document.getElementById("graph" + index);
+    if (document.getElementById("checkbox" + index).checked) {
+      chartElement.style.display = "block";
+      charts[index - 1].resize();
+    } else {
+      chartElement.style.display = "none";
+    }
+  }
+
+  // Funcion para resetear la grafica
+  function resetChart() {
+    charts.forEach((chart) => {
+      chart.setOption({
+        dataZoom: [{
+          start: 0,
+          end: 100
+        }, {
+          start: 0,
+          end: 100
+        }]
+      }, false);
+    });
+
+    // Actualizar todas las gráficas de una vez
+    charts.forEach(chart => chart.getZr().refresh());
+  }
+
+  function guardarDatos() {
+    $.getJSON($SCRIPT_ROOT + '/data', function(allData) {
+      var csv = "timestamp";
+      for (var i = 1; i <= 6; i++) {
+        if (allData[0][i] !== undefined) {
+          csv += ",input_" + i;
+        }
+      }
+      for (var i = 7; i <= 16; i++) {
+        if (allData[0][i] !== undefined) {
+          csv += ",dg" + (i - 6);
+        }
+      }
+      csv += "\n";
+
+      allData.forEach(function(row) {
+        var rowData = [row[0]];
+        for (var i = 1; i < row.length; i++) {
+          if (row[i] !== undefined) {
+            rowData.push(row[i]);
+          }
+        }
+        csv += rowData.join(',') + "\n";
+      });
+
+      var blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      var link = document.createElement("a");
+      if (link.download !== undefined) {
+        var url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", "datos.csv");
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    });
+  }
+
+  // Tiempo y funciones para el rango de tiempo de los en las graficas
+  var timeRange = 5; // Valor inicial en minutos
+
+  document.getElementById('timeRangeSlider').addEventListener('input', function() {
+    timeRange = parseInt(this.value);
+    document.getElementById('timeRangeValue').textContent = timeRange;
+    fetchAndUpdateData();
+  });
+
+  document.getElementById('resetTimeRange').addEventListener('click', function() {
+    timeRange = 5;
+    document.getElementById('timeRangeSlider').value = 5;
+    document.getElementById('timeRangeValue').textContent = 5;
+    fetchAndUpdateData();
+  });
+</script>
+
+
+
+{% endblock %}

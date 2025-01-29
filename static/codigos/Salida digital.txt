@@ -1,0 +1,173 @@
+/*Nombre: Salida digital
+  Descripcion: Este programa permite controlar las salidas digitales de un ESP32 desde la plataforma Device IoT.
+*/
+
+//Librerias
+#include <WiFi.h>
+#include <base64.h> // Esta libreria se usa para codificar el usuario y la contraseña
+#include <ArduinoJson.h>
+
+//Etiquetado de pine I/O
+#define LEDWIFI 26
+
+//Constantes
+const unsigned long TIEMPO_MEDIDA = 1000; // Define cada cuanto tiempo toma los datos
+const unsigned long TIEMPO_ENVIO_WIFI = 100;  // Define cada cuanto tiempo envia los datos
+
+String user = "Alex"; //  Usuario de la plataforma
+String pass = "alex1";  //  Contraseña de la plataforma
+String encoded = base64::encode(user + ":" + pass);
+
+//const char* WIFI_SSID = "IoT-B19";  // Nombre red wifi
+//const char* WIFI_PASS = "lcontrol2020*";  // Clave red wifi
+//const char* HTTP_HOST = "192.168.100.116";
+
+const char* WIFI_SSID = "DIR-615-88C2.2";
+const char* WIFI_PASS = "10770686";
+const char* HTTP_HOST = "192.168.1.2";//IP Casa
+
+//  const char* WIFI_SSID     = "SOTO_DE_ES";
+//  const char* WIFI_PASS = "22108260";
+//  const char* HTTP_HOST = "192.168.1.73";//IP rionegro
+
+//  const char* WIFI_SSID     = "Alex";
+//  const char* WIFI_PASS = "ros2020*";
+//  const char* HTTP_HOST = "192.168.43.213";//IP datos Alex
+
+const int HTTP_PORT = 6005;
+
+//Variables
+unsigned long tiempoMedida = 0;
+unsigned long tiempoWifi = 0;
+
+WiFiClient client;
+
+String payload = "";
+bool btn1Value = 0;
+bool btn2Value = 0;
+
+//Subrutinas y/o funciones
+void wifiInit() { // Funcion de conexion wifi
+  delay(10);
+
+//  Serial.print("[WiFi] Connecting to ");
+//  Serial.println(WIFI_SSID);
+
+  WiFi.begin(WIFI_SSID, WIFI_PASS);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("");
+  Serial.println("[WiFi] WiFi connected");
+  Serial.print("[WiFi] IP address: ");
+  Serial.println(WiFi.localIP());
+}
+
+void wifiPost() {
+  Serial.print("[HTTP] connecting to ");
+  Serial.println(HTTP_HOST);
+  if (!client.connect(HTTP_HOST, HTTP_PORT)) {
+    Serial.println("[HTTP] connection failed");
+    return;
+  }
+  // body contiene todo la informacion que se envia desde el ESP32 a la plataforma, se puede modificar agregando o eliminando datos, pero debe de mantener el formato.
+  String body = "{}";
+  // url contine la informacion del body, la dreccion de la pagina, los datos de acceso entre otros datos
+  String url = "POST /data HTTP/1.1\r\n";
+  url += "Host: " + String(HTTP_HOST) + ":" + String(HTTP_PORT) + "\r\n";
+  url += "Content-Type: application/json\r\n";
+  url += "Connection: close\r\n";
+  url += "Accept: application/json\r\n";
+  //Agregar header Authorization: (base64 de  user:pass)
+  url += "Authorization: Basic ";
+  url += encoded + "\r\n";
+  url += "Content-Length: " + String(body.length()) + "\r\n\r\n";
+  url += body;
+  client.print(url);
+  unsigned long timeout = millis();
+  while (client.available() == 0) {
+    if (millis() - timeout > 5000) {
+      Serial.println("[HTTP] Client Timeout !");
+      client.stop();
+      return;
+    }
+  }
+  readResponse(&client);
+}
+
+// Funcion para leer la respuesta del servidor
+void readResponse(WiFiClient* client) {  //Esperando respuesta del servidor
+  unsigned long timeout = millis();
+  while (client->available()) {
+    String jsonResponse = client->readStringUntil('}' + 1);
+    int jsonStart = jsonResponse.indexOf('{');
+    int jsonEnd = jsonResponse.lastIndexOf('}');
+    String jsonContent = jsonResponse.substring(jsonStart, jsonEnd + 1);
+    parseJSON(jsonContent);
+        Serial.println(jsonContent + String("-------************************************--------"));
+  }
+}
+
+// Funcion para separar los datos recibidos
+void parseJSON(String jsonString) {
+  const size_t capacity = JSON_OBJECT_SIZE(2) + 20; // Tamaño máximo esperado del JSON
+  DynamicJsonDocument doc(capacity);  // Crear un documento JSON
+
+  DeserializationError error = deserializeJson(doc, jsonString);  // Deserializar el JSON
+
+  // Obtener los valores del JSON y almacenar en variables
+  // Los nombres On y Off corresponden a los nombres que se les da a los botones en la plataforma, se pregunta por estos nombres
+  // y se almacena su estado en una varioable
+  btn1Value = doc["On"];
+  btn2Value = doc["Off"];
+}
+
+void getData(WiFiClient& client, const char* host, int port) {
+  String footer = " HTTP/1.1\r\n";
+  footer += "Host: " + String(host) + "\r\n";
+  footer += "Connection: close\r\n";
+  footer += "Accept: application/json\r\n\r\n";
+  if (!client.connect(host, port)) {
+    Serial.println("[WiFi] Could not connect");
+    return;
+  }
+  String sendString = "GET /data/" + footer;
+  client.print(sendString);
+  readResponse(&client);
+}
+
+void led() {  // Funcion para encender o apagar los leds
+  if (btn1Value == 1) {
+    digitalWrite(LEDWIFI, HIGH);
+  }
+  if (btn2Value == 1) {
+    digitalWrite(LEDWIFI, LOW);
+  }
+}
+
+void setup() {
+  //Configurar entradas digitales
+  pinMode(LEDWIFI, OUTPUT);
+
+  // Limpieza de salidas
+  digitalWrite(LEDWIFI, LOW);
+
+  //Inicio de comunicaciones
+  Serial.begin(115200);
+  wifiInit();
+  //Limpieza de temporizadores
+  tiempoMedida = millis();
+  tiempoWifi = millis();
+}
+
+void loop() {
+  if (millis() - tiempoWifi >= TIEMPO_ENVIO_WIFI) {
+    wifiPost();
+    getData(client, HTTP_HOST, HTTP_PORT);
+    tiempoWifi = millis();
+    led();
+  }
+}

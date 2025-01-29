@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Flask App - Login</title>
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+        crossorigin="anonymous"
+    />
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='styles/style.css') }}"
+    />
+    <style>
+        /* Estilos generales */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #ffffff;
+            margin: 0;
+            padding-top: 20px; /* Añadido para dar espacio en la parte superior */
+        }
+
+        /* Contenedor de la imagen */
+        .image-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Estilos para la imagen */
+        .imagen {
+            max-width: 200px; /* Ajusta este valor según el tamaño deseado */
+            height: auto;
+        }
+
+        /* Contenedor principal */
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            margin: 0 auto; /* Centra el contenedor horizontalmente */
+        }
+
+        /* Estilos para la tarjeta */
+        .card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        /* Encabezado de la tarjeta */
+        .card-header {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+            text-align: center;
+        }
+
+        /* Contenido de la tarjeta */
+        .card-body {
+            padding: 20px;
+        }
+
+        /* Estilos para los campos de entrada */
+        .form-control {
+            margin-bottom: 15px;
+        }
+
+        /* Estilos para el botón */
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <!-- Contenedor de la imagen fuera de la tarjeta -->
+    <div class="image-container">
+        <center><img src="{{ url_for('static', filename='Imagenes/logo.png') }}" class="imagen" alt=""></center>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h1 class="h3 mb-3 fw-normal">Log In</h1>
+            </div>
+            <div class="card-body">
+                <form method="post" action="/login">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="username" name="username" placeholder="Usuario" required>
+                        <label for="username">Usuario</label>
+                    </div>
+                    <div class="form-floating">
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Contraseña" required>
+                        <label for="password">Contraseña</label>
+                    </div>
+                    <button class="btn btn-primary w-100 py-2" type="submit">Iniciar sesión</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

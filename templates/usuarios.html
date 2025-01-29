@@ -1,0 +1,661 @@
+{% extends 'layout4.html' %} 
+{% block content %}
+
+<style>
+    /* Estilos existentes (sin cambios) */
+    body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        margin: 0;
+        padding: 0;
+        background-color: #ffffff;
+    }
+
+    .container {
+        width: 100%;
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+    }
+
+    .card {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    .card2 {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .card-header {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .card-title {
+        margin: 0;
+        color: #333;
+        text-align: center;
+    }
+
+    .card-content {
+        padding: 20px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="password"] {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    input[readonly] {
+        background-color: #e9ecef;
+    }
+
+    .button-group {
+        display: flex;
+        /* justify-content: space-between; */
+        justify-content: center;
+        gap: 10px;
+        margin-top: 20px;
+        margin-left: 100px;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+
+        min-width: 60px;
+        max-width: 220px;
+    }
+
+
+    /* .button-group {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .btn {
+        width: auto;
+        min-width: 60px;
+        max-width: 220px;
+    } */
+
+
+    .btn-primary {
+        background-color: #007bff;
+        color: #fff;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        color: #fff;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        color: #fff;
+    }
+
+    /* Estilos para los mensajes */
+    .alert {
+        padding: 10px;
+        margin-bottom: 15px;
+        border-radius: 4px;
+        text-align: center;
+    }
+
+    .alert-success {
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+        color: #155724;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+        color: #721c24;
+    }
+
+
+
+    #userList {
+        margin-top: 20px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        padding: 10px;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    /* Nuevos estilos para la tabla */
+    .user-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .user-table th,
+    .user-table td {
+        border: 1px solid #ced4da;
+        padding: 8px;
+        text-align: left;
+    }
+
+    .user-table th {
+        background-color: #f8f9fa;
+        font-weight: bold;
+    }
+
+    .user-table tr:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+
+    /* Estilos para el boton desplegable */
+    .form-group.required label::after {
+        content: " *";
+        color: red;
+    }
+
+    .button-group {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .btn {
+        width: 100%;
+    }
+
+    .form-row {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .form-row .form-group {
+        width: 48%;
+    }
+
+    #emailContent {
+        margin-top: 20px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        padding: 10px;
+    }
+
+    .required-note {
+        color: red;
+        font-size: 0.em;
+        margin-top: 10px;
+    }
+
+    .action-icon {
+        font-size: 0.8rem; /* Hace los iconos más pequeños */
+        margin: 0 1px; /* Añade un pequeño margen entre los iconos */
+    }
+
+    .btn-icon {
+        padding: 0.1rem 0.1rem; /* Reduce el padding del botón */
+    }
+</style>
+
+<!-- <li>AL ingresar un nuevo usuario aparece el mensaje usuario no encontrado y agrega el usuario, este mensaje no deberia aparecer</li> -->
+<!-- <li>Quitar las ventanas emergentes de agregar codigo de administrador, ya hay una casilla para hacerlo </li> -->
+<li>En ocasiones aparcen mensajes en la pantlla que no deberian aparecer, es necesario limpiar este espacio, principalmente cuando se cargue la pagina</li>
+<li>Al agregar un usuario nuevo se pide la clave administrador, pero no funciona bien, se puede ingresar cualquier dato y aun asi guarda, tambien pasa al actualizar</li>
+<li>Dejar de pedir la contraseña para eliminar usuario a menos que sea administrador</li>
+<li>Agregar usuario profesor, puede agregar y eliminar estudiantes pero no administrador</li>
+
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Gestión de Usuarios</h2>
+        </div>
+        <div class="card-content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            <form id="user-form" action="{{ url_for('register_user') }}" method="POST">
+                <div class="form-grid">
+                    <div class="form-group required">
+                        <label for="firstname">Nombre:</label>
+                        <input type="text" id="firstname" name="firstname" required>
+                    </div>
+                    <div class="form-group required">
+                        <label for="lastname">Apellido:</label>
+                        <input type="text" id="lastname" name="lastname" required>
+                    </div>
+                    <div class="form-group required">
+                        <label for="email">Correo electrónico:</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group required">
+                        <label for="phone">Número telefónico:</label>
+                        <input type="tel" id="phone" name="phone" required>
+                    </div>
+                    <div class="form-group required">
+                        <label for="career">Carrera que estudia:</label>
+                        <input type="text" id="career" name="career" required>
+                    </div>
+                    <div class="form-group required">
+                        <label for="document">Documento:</label>
+                        <input type="text" id="document" name="document" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="username">Usuario:</label>
+                        <input type="text" id="username" name="username" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Clave:</label>
+                        <input type="password" id="password" name="password" readonly>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <!-- Usando "form-group required" se define los parametros necesarios para ingresar un nuevo usuario -->
+                    <!-- <div class="form-group required"> -->
+                    <div class="form-group">
+                        <label for="admin_key">Código de administrador:</label>
+                        <input type="password" id="admin_key" name="admin_key" maxlength="4" pattern="\d{4}">
+                    </div>
+                    <div class="form-group required">
+                        <label for="user_type">Tipo de usuario:</label>
+                        <select id="usertype" name="usertype" required>
+                            <option value="">Seleccione un tipo</option>
+                            <option value="Estudiante">Estudiante</option>
+                            <option value="Empleado">Empleado</option>
+                            <option value="Administrador">Administrador</option>
+                        </select>
+                    </div>
+                </div>
+                <p class="required-note">Los campos marcados con * son obligatorios.</p>
+                <div class="button-group">
+                    <button type="button" id="addUser" class="btn btn-primary">Agregar Usuario</button>
+                    <!-- <button type="button" id="deleteUser" class="btn btn-danger">Eliminar Usuario</button> -->
+                    <button type="button" id="clearFields" class="btn btn-secondary">Limpiar campos</button>
+                    <button type="button" id="showUsers" class="btn btn-primary">Mostrar usuarios</button>
+                    <button type="button" id="generateEmail" class="btn btn-primary">Generar Correo</button>
+                </div>
+                <input type="hidden" id="action" name="action" value="">
+            </form>
+            
+            
+        </div>
+    </div>
+    <div class="card2">
+        <!-- <div class="card-content2"></div> -->
+            <div id="userList" style="display: none;"></div>
+            <div id="emailContent" style="display: none;"></div>
+        <!-- </div> -->
+    </div>
+    
+</div>
+<br>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('user-form');
+        const emailInput = document.getElementById('email');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const clearFieldsButton = document.getElementById('clearFields');
+        const showUsersButton = document.getElementById('showUsers');
+        const userListDiv = document.getElementById('userList');
+        const addUserButton = document.getElementById('addUser');
+        // const deleteUserButton = document.getElementById('deleteUser');
+        const actionInput = document.getElementById('action');
+        const emailContentDiv = document.getElementById('emailContent');
+        const generateEmailButton = document.getElementById('generateEmail');
+        const userTypeSelect = document.getElementById('usertype');
+
+        // Función para buscar un usuario por su nombre
+        async function buscarUsuario(username) {
+            try {
+                const response = await fetch(`/buscar_usuario/${username}`);
+                if (!response.ok) {
+                    throw new Error('Usuario no encontrado', username);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Error al buscar usuario:', error);
+                alert(error.message);
+                return null;
+            }
+        }
+        
+        // Función para generar un nombre de usuario a partir del correo electrónico
+        function generateUsername(email) {
+            return email.split('@')[0];
+        }
+        // Función para generar una contraseña aleatoria de 6 dígitos
+        function generatePassword() {
+            return Math.floor(100000 + Math.random() * 900000).toString();
+        }
+        
+        emailInput.addEventListener('input', function() {
+            usernameInput.value = generateUsername(this.value);
+            passwordInput.value = generatePassword();
+        });
+
+        clearFieldsButton.addEventListener('click', function() {
+            form.reset();
+            usernameInput.value = '';
+            passwordInput.value = '';
+            emailContentDiv.style.display = 'none';
+            userListDiv.style.display = 'none';
+        });
+
+        // addUserButton.addEventListener('click', function() {
+        //     if (validateAddForm()) {
+        //         if(addUserButton.textContent === 'Agregar Usuario')
+        //         {
+        //             if (confirm('¿Está seguro de que desea agregar este usuario?')) {
+        //                 actionInput.value = 'Agregar Usuario';
+        //                 form.submit();
+        //                 showEmailContent();
+        //             }
+        //         }
+        //     }
+        // });
+
+
+        addUserButton.addEventListener('click', function() {
+            if (validateAddForm()) {
+                const userType = document.getElementById('usertype').value;
+                if (userType === 'Administrador') {
+                    const admin_key = document.getElementById('admin_key').value.trim();
+                    actionInput.value = 'Agregar Usuario';
+                    if (admin_key === '') {
+                        alert('Para agregar o modificar un usuario administrador, debe ingresar el Código de administrador.');
+                        return;
+                    }
+                    else
+                    {
+                        if (confirm('¿Está seguro de que desea agregar/actualizar este usuario?')) {
+                            form.submit();
+                            // showEmailContent();
+                            return;
+                        }
+                    }
+                }
+                actionInput.value = 'Agregar Usuario';
+                if (addUserButton.textContent === 'Agregar Usuario' && userType !== 'Administrador') {
+                    if (confirm('¿Está seguro de que desea agregar/actualizar este usuario?')) {
+                        form.submit();
+                        showEmailContent();
+                    }
+                }
+            }
+        });
+
+        // deleteUserButton.addEventListener('click', function() {
+        //     if (validateDeleteForm()) {
+        //         if (confirm('¿Está seguro de que desea eliminar este usuario?')) {
+        //             actionInput.value = 'Eliminar Usuario';
+        //             form.submit();
+        //         }
+        //     }
+        // });
+
+
+        // Función para eliminar un usuario
+        function deleteUser(username) {
+            // const admin_key = prompt("Ingrese la clave de administrador:");
+            const admin_key = document.getElementById('admin_key');
+            if (admin_key) {
+                // Usar el formulario existente para enviar la solicitud de eliminación
+                const form = document.getElementById('user-form');
+                const actionInput = document.getElementById('action');
+                const usernameInput = document.getElementById('username');
+                // const adminKeyInput = document.getElementById('admin_key');
+
+                usernameInput.value = username;
+                // adminKeyInput.value = admin_key;
+                actionInput.value = 'Eliminar Usuario';
+
+                if (confirm(`¿Está seguro de que desea eliminar el usuario ${username}?`)) {
+                    form.submit();
+                }
+            }
+            else
+            {
+                alert('Por favor, ingrese el código de administrador para eliminar un usuario.');
+            }
+        }
+        // Función para editar un usuario
+        function editUser(username) {
+            // Aquí debes implementar la lógica para editar el usuario
+            // Primero, obtén los datos del usuario
+            fetch(`/buscar_usuario/${username}`)
+                .then(response => response.json())
+                .then(user => {
+                    // Llena el formulario con los datos del usuario
+                    document.getElementById('firstname').value = user.firstname;
+                    document.getElementById('lastname').value = user.lastname;
+                    document.getElementById('email').value = user.email;
+                    document.getElementById('phone').value = user.phone;
+                    document.getElementById('career').value = user.career;
+                    document.getElementById('document').value = user.document;
+                    document.getElementById('username').value = user.username;
+                    document.getElementById('usertype').value = user.usertype;
+                    document.getElementById('password').value = user.password;
+
+                    // Cambia el texto del botón "Agregar Usuario" a "Actualizar Usuario"
+                    addUserButton.textContent = 'Actualizar Usuario';
+                    addUserButton.onclick = function() {
+                        if (validateAddForm()) {
+                            // if (confirm('¿Está seguro de que desea actualizar este usuario?')) {
+                                actionInput.value = 'Actualizar Usuario';
+                                addUserButton.textContent = 'Agregar Usuario';
+                                form.submit();
+                            // }
+                        }
+                    };
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al obtener datos del usuario. Por favor, intente de nuevo.');
+                });
+        }
+
+        // Funcion para mostrar los usuarios en una tabla
+        showUsersButton.addEventListener('click', function() {
+            fetch('/obtener_usuarios')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert("Error al obtener los usuarios: " + data.error);
+                    } else {
+                        let tableHTML = '<table class="user-table">';
+                        tableHTML += '<tr><th>Acciones</th><th>Tipo Usuario</th><th>Usuario</th><th>Nombre</th><th>Apellido</th><th>Email</th><th>Teléfono</th><th>Carrera</th><th>Documento</th></tr>';
+            
+                        data.usuarios.forEach(usuario => {
+                            tableHTML += `<tr>
+                                <td>
+                                    <button class="btn btn-icon btn-danger delete-user" data-username="${usuario[2]}">
+                                        <i class="fas fa-trash action-icon"></i>
+                                    </button>
+                                    <button class="btn btn-icon btn-primary edit-user" data-username="${usuario[2]}">
+                                        <i class="fas fa-edit action-icon"></i>
+                                    </button>
+                                </td>
+                                <td>${usuario[1]}</td>
+                                <td>${usuario[2]}</td>
+                                <td>${usuario[4]}</td>
+                                <td>${usuario[5]}</td>
+                                <td>${usuario[6]}</td>
+                                <td>${usuario[7]}</td>
+                                <td>${usuario[8]}</td>
+                                <td>${usuario[9]}</td>
+                                
+                            </tr>`;
+                        });
+                        tableHTML += '</table>';
+                        userListDiv.innerHTML = tableHTML;
+                        userListDiv.style.display = 'block';
+
+                        // // Agregar event listeners para los botones de borrar y editar
+                        // document.querySelectorAll('.delete-user').forEach(button => {
+                        //     button.addEventListener('click', function() {
+                        //         const username = this.getAttribute('data-username');
+                        //         deleteUser(username);
+                        //         // if (confirm(`¿Está seguro de que desea eliminar el usuario ${username}?`)) {
+                        //         //     deleteUser(username);
+                        //         // }
+                        //     });
+                        // });
+
+
+
+
+                        function verificarAdminKey(callback) {
+                            const admin_key = document.getElementById('admin_key').value.trim();
+                            if (admin_key === '') {
+                                alert('Por favor, complete todos los campos requeridos.');
+                                return;
+                            }
+                            callback(); // Llamar a la función que necesite la verificación
+                        }
+
+                        document.querySelectorAll('.delete-user').forEach(button => {
+                            button.addEventListener('click', function() {
+                                const username = this.getAttribute('data-username');
+                                verificarAdminKey(() => {
+                                    // if (confirm(`¿Está seguro de que desea eliminar el usuario ${username}?`)) {
+                                        deleteUser(username);
+                                    // }
+                                });
+                            });
+                        });
+
+                        document.querySelectorAll('.edit-user').forEach(button => {
+                            button.addEventListener('click', function() {
+                                const username = this.getAttribute('data-username');
+                                editUser(username);
+                            });
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    alert("Error al obtener los usuarios. Por favor, intente de nuevo más tarde.");
+                });
+        });
+
+        // Función para validar que se ingresaron los datos necesarios para agregar usuario
+        function validateAddForm() {
+            const requiredFields = form.querySelectorAll('input[required], select[required]');
+            // console.log('requiredFields:', requiredFields);
+            for (let field of requiredFields) {
+                if (!field.value) {
+                    alert('Por favor, complete todos los campos requeridos.');
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // function validateDeleteForm() {
+        //     if (!emailInput.value || !document.getElementById('admin_key').value) {
+        //         alert('Para eliminar un usuario debe ingresar correo electrónico y la clave de administrador.');
+        //         return false;
+        //     }
+        //     return true;
+        // }
+
+        // Función para generar el contenido del correo electrónico
+        async function showEmailContent() {
+            const username = usernameInput.value.trim();
+            if (!username) {
+                alert('Por favor, ingrese un nombre de usuario.');
+                return;
+            }
+
+            const usuario = await buscarUsuario(username);
+            if (!usuario) return;
+            const email = usuario.email;
+            const emailSubject = `${usuario.firstname}, Bienvenido a Device IoT Eafit. `;
+            const emailBody = `
+                Estimado/a ${usuario.firstname} ${usuario.lastname},
+
+                Le damos la bienvenida a Device IoT Eafit. 
+                
+                Para ingresar a la plataforma lo puede hacer por medio del siguiente enlace: 
+                https://device-iot-eafit.com/
+
+                A continuación, encontrará sus credenciales de acceso:
+
+                Usuario: ${usuario.username}
+                Contraseña: ${usuario.password}
+
+                Si tiene alguna pregunta, no dude en contactarnos.
+
+                Saludos cordiales,
+                El equipo de Device IoT Eafit
+            `;
+
+            emailContentDiv.innerHTML = `
+                <h3><center>Contenido del correo electrónico:</center></h3>
+                <p><strong>Correo electrónico:</strong> ${email}</p>
+                <p><strong>Asunto:</strong> ${emailSubject}</p>
+                <p><strong>Contenido:</strong></p>
+                <pre>${emailBody}</pre>
+            `;
+            emailContentDiv.style.display = 'block';
+        }
+
+        // Agregar evento click para el botón "Generar Correo"
+        if (generateEmailButton) {
+            generateEmailButton.addEventListener('click', function(e) {
+                e.preventDefault(); // Prevenir el envío del formulario si el botón está dentro de un formulario
+                // console.log('Botón Generar Correo clickeado');
+                showEmailContent();
+            });
+        } else {
+            // console.error('El botón Generar Correo no se encontró en el DOM');
+        }
+
+        // Do not clear form fields on page load
+        // form.reset();
+        // usernameInput.value = '';
+        // passwordInput.value = '';
+    });
+</script>
+
+{% endblock %}

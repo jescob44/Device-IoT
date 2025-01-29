@@ -1,0 +1,191 @@
+<!-- Extend flask layout.html -->
+{% extends 'layout4.html' %} 
+{% block content %}
+<style>
+    /* Estilos generales */
+    body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        margin: 0;
+        padding: 0;
+        background-color: #ffffff;
+    }
+    
+    /* Contenedor principal */
+    .container {
+        width: 100%;
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+    }
+    
+    /* Estilos para la tarjeta */
+    .card {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    
+    /* Encabezado de la tarjeta */
+    .card-header {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    /* Título */
+    h1 {
+        margin: 0;
+        color: #333;
+        text-align: center;
+    }
+    
+    /* Contenido de la tarjeta */
+    .card-content {
+        padding: 20px;
+    }
+    
+    /* Estilos para el select y los botones */
+    select, button {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+    
+    /* Modificado: Estilos para los botones */
+    button {
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        width: calc(30% - 5px); /* Cambiado: Ancho del 50% menos el margen */
+        display: inline-block; /* Añadido: Para alinear los botones */
+    }
+    
+    /* Cambiar la separacion entre botones */
+    button:first-of-type {
+        margin-right: -200px;
+    }
+    
+    button:hover {
+        background-color: #0056b3;
+    }
+    
+    /* Añadido: Contenedor para los botones */
+    /* .button-container {
+        display: flex;
+        justify-content: space-between;
+        
+        margin-bottom: 10px;
+    } */
+
+    .button-container {
+        display: flex;
+        justify-content: space-around; /* o space-evenly para una distribución más uniforme */
+        margin-bottom: 10px;
+    }
+    
+    
+    /* Estilos para el contenido del archivo */
+    #contenido-archivo {
+        background-color: #f8f9fa;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        padding: 10px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    
+    /* Responsividad */
+    @media (max-width: 768px) {
+        .container {
+            padding: 10px;
+        }
+        
+        /* Añadido: Ajuste de botones para pantallas pequeñas */
+        button {
+            width: 100%;
+            margin-right: 0;
+        }
+        
+        .button-container {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h1>Archivos</h1>
+        </div>
+        <div class="card-content">
+            <label for="file-select">Seleccione un archivo:</label>
+            <select name="archivo" id="file-select">
+                <option value="">--Seleccione una opción--</option>
+                {% for file in file_list %}
+                <!-- En la siguiente linea es necesario agregar un filtro without_extension para quitar la extension
+                 este filtro se encuentra en app_html4.py -->
+                <option value="{{ file }}">{{ file | without_extension }}</option>
+                {% endfor %}
+            </select>
+
+            <!-- Modificado: Añadido contenedor para los botones -->
+            <div class="button-container">
+                <button onclick="mostrarContenido()">Mostrar Contenido</button>
+                <button onclick="copiarContenido()">Copiar Contenido</button>
+            </div>
+            <pre id="contenido-archivo"></pre>
+        </div>
+    </div>
+</div>
+
+<script>
+    function mostrarContenido() {
+        var select = document.getElementById("file-select");
+        var selectedFile = select.options[select.selectedIndex].value;
+
+        if (selectedFile === "") {
+            alert("Por favor, seleccione un archivo.");
+            return;
+        }
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "static/codigos/" + selectedFile, true);
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                document.getElementById("contenido-archivo").innerText = xhr.responseText;
+            }
+        };
+        xhr.send();
+    }
+
+    function copiarContenido() {
+        var contenido = document.getElementById("contenido-archivo").innerText;
+        var textarea = document.createElement("textarea");
+        var select = document.getElementById("file-select");
+        var selectedFile = select.options[select.selectedIndex].value;
+        textarea.value = contenido;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+        if (selectedFile === "") {
+            alert("Por favor, seleccione un archivo.");
+            return;
+        }
+        else {
+            alert("Contenido copiado al portapapeles.");
+        }
+    }
+</script>
+<br>
+<br>
+{% endblock %}

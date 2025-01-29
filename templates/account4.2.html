@@ -1,0 +1,231 @@
+<!-- Este archivo html permite Cargar Archivo CSV, solo permite visualizarlos -->
+<!-- Extend flask layout.html -->
+{% extends 'layout4.html' %} 
+
+{% block content %}
+<style>
+    /* Estilos generales */
+    body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        background-color: #ffffff;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .card {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+
+    .card-body {
+        padding: 20px;
+    }
+
+    .card-title {
+        color: #333;
+        margin-bottom: 15px;
+    }
+
+    form {
+        margin-bottom: 20px;
+    }
+
+    input[type="file"] {
+        margin-right: 10px;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+    }
+
+    /* Estilos actualizados para la tabla */
+    .table-container {
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+    }
+
+    .table {
+        width: 100%;
+        margin-bottom: 0;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .table th,
+    .table td {
+        padding: 0.5rem;
+        border-bottom: 1px solid #dee2e6;
+        white-space: nowrap;
+    }
+
+    .table thead th {
+        background-color: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    /* Estilos para el gráfico */
+    #graph {
+        height: 400px;
+        width: 100%;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+</style>
+
+<div class="container">
+    <div class="card">
+        <div class="card-body">
+            <h3 class="card-title text-center">Cargar Archivo CSV</h3>
+            <form action="/load_data" method="post" enctype="multipart/form-data" class="text-center">
+                <input type="file" name="archivo" accept=".csv" class="form-control-file d-inline-block">
+                <input type="submit" value="Cargar datos" class="btn btn-primary">
+            </form>
+
+            {% if error_message %}
+            <div class="alert alert-danger mt-3">
+                {{ error_message }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if json_data2 %}
+    <div class="card">
+        <div class="card-body">
+            <h1 class="card-title text-center">Datos sensores</h1>
+            <div class="table-container">
+              <table id="table-data" class="table table-striped table-sm">
+                <tbody>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">timestamp</th>
+                    <th scope="col">input_1</th>
+                    <th scope="col">input_2</th>
+                    <th scope="col">input_3</th>
+                    <th scope="col">input_4</th>
+                    <th scope="col">input_5</th>
+                    <th scope="col">input_6</th>
+
+                    <th scope="col">d1</th>
+                    <th scope="col">d2</th>
+                    <th scope="col">d3</th>
+                    <th scope="col">d4</th>
+                    <th scope="col">d5</th>
+                    <th scope="col">d6</th>
+                    <th scope="col">d7</th>
+                    <th scope="col">d8</th>
+                    <th scope="col">d9</th>
+                    <th scope="col">d10</th>
+                  </tr>
+                  {% for json_data2 in json_data2 %}
+                  <tr>
+                    <th scope="row">{{ loop.index-1 }}</th>
+                    <td>{{ json_data2[0] }}</td>
+                    <td>{{ json_data2[1] }}</td>
+                    <td>{{ json_data2[2] }}</td>
+                    <td>{{ json_data2[3] }}</td>
+                    <td>{{ json_data2[4] }}</td>
+                    <td>{{ json_data2[5] }}</td>
+                    <td>{{ json_data2[6] }}</td>
+                    <td>{{ json_data2[7] }}</td>
+                    <td>{{ json_data2[8] }}</td>
+                    <td>{{ json_data2[9] }}</td>
+                    <td>{{ json_data2[10] }}</td>
+                    <td>{{ json_data2[11] }}</td>
+                    <td>{{ json_data2[12] }}</td>
+                    <td>{{ json_data2[13] }}</td>
+                    <td>{{ json_data2[14] }}</td>
+                    <td>{{ json_data2[15] }}</td>
+                    <td>{{ json_data2[16] }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">echarts Plot</h5>
+            <div id="graph"></div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if json_data2 %}
+<script type="text/javascript">
+    var json_data2 = {{ json_data2|tojson }};
+    var myChart = echarts.init(document.getElementById("graph"));
+    var option = {
+        tooltip: { trigger: "axis", axisPointer: { animation: false } },
+        legend: { data: ['input_1', 'input_2', 'input_3', 'input_4', 'input_5', 'input_6', 'dig_1'] },
+        dataset: {
+            source: json_data2,
+            dimensions: ['timestamp', 'input_1', 'input_2', 'input_3', 'input_4', 'input_5', 'input_6', 'dig_1']
+        },
+        toolbox: {
+            show: true,
+            feature: {
+                dataZoom: { yAxisIndex: 'none' },
+                dataView: {},
+                restore: {},
+                saveAsImage: {}
+            }
+        },
+        xAxis: {
+            name: "Time",
+            type: "time",
+            boundaryGap: false,
+            splitLine: { show: true }
+        },
+        yAxis: {
+            name: "Datos",
+            type: "value",
+            boundaryGap: [0, "0%"],
+            splitLine: { show: true }
+        },
+        series: [
+            { name: "input_1", type: "line", showSymbol: false, encode: { x: "timestamp", y: "input_1" } },
+            { name: "input_2", type: "line", showSymbol: false, encode: { x: "timestamp", y: "input_2" } },
+            { name: "input_3", type: "line", showSymbol: false, encode: { x: "timestamp", y: "input_3" } },
+            { name: "input_4", type: "line", showSymbol: false, encode: { x: "timestamp", y: "input_4" } },
+            { name: "input_5", type: "line", showSymbol: false, encode: { x: "timestamp", y: "input_5" } },
+            { name: "input_6", type: "line", showSymbol: false, encode: { x: "timestamp", y: "input_6" } },
+            { name: "d1", type: "line", showSymbol: false, encode: { x: "timestamp", y: "d1" } },
+            { name: "d2", type: "line", showSymbol: false, encode: { x: "timestamp", y: "d2" } },
+            { name: "d3", type: "line", showSymbol: false, encode: { x: "timestamp", y: "d3" } },
+            { name: "d4", type: "line", showSymbol: false, encode: { x: "timestamp", y: "d4" } },
+            { name: "d5", type: "line", showSymbol: false, encode: { x: "timestamp", y: "d5" } },
+            { name: "d6", type: "line", showSymbol: false, encode: { x: "timestamp", y: "d6" } },
+            { name: "d7", type: "line", showSymbol: false, encode: { x: "timestamp", y: "d7" } },
+            { name: "d8", type: "line", showSymbol: false, encode: { x: "timestamp", y: "d8" } },
+            { name: "d9", type: "line", showSymbol: false, encode: { x: "timestamp", y: "d9" } },
+            { name: "d10", type: "line", showSymbol: false, encode: { x: "timestamp", y: "d10" } },
+        ]
+    };
+
+    myChart.setOption(option);
+</script>
+<br>
+<br>
+{% endif %}
+{% endblock %}

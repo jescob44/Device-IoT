@@ -305,68 +305,6 @@
 </div>
 
 
-<div>
-  <h2>Lista de elementos faltantes o modificaciones pendientes </h2>
-  <!-- <li>Falta modificar la recepcion de datos, en el momento se recibe y asigna dependiendo de la columna, se debe cambiar a que dependa del nombre</li> -->
-  <li>En el Dashboard falta corregir la asignacion de ID, como esta estos se pueden repetir</li>
-  <!-- <li>Elemento led ya fue agregado, solo falta modificar la asignacion del ID ya sea manual o automatica</li> -->
-  <li>Modificar los script de javascript para que se carguen desde la carpeta scripts y no esten dentro del codigo.</li>
-  <!-- <li>En mostrar datos despues de cargar un archivo aparece el siguiente error. GET http://192.168.100.138:6005/json_data 404 (NOT FOUND)</li> -->
-  <li>Hay que modificar tanto la grafica como la tabla para el caso de usar menos de 4 datos, solo mostrar en la tabla la cantidad de datos usados y sin columnas de ceros.</li>
-  <!-- <li>Los led presentan un problema, cuando los pongo en orden funciona correctamente, pero si los pongo en desorden un me salto uno los siguientes no cambian de color.</li> -->
-  <!-- <li>Importa csv incluir todos datos en cargar datos, grafico solo analogas</li> -->
-  <!-- <li>Mejorar estilos</li> -->
-  <li>logo nombre proyecto arriba izquierda</li>
-  <!-- <li>agregar footer con el nombre de la universidad y el año(quitar logo eafit)</li> -->
-  <!-- <li>Header estatico en la parte superior y que ocupe todo un borde</li> -->
-  <!-- <li>Logo por cada vista cuando colapsar</li> -->
-  <!-- <li>http client get, post,.... ya viene instalada</li> -->
-  <!-- <li>La cantidad de entradas analogas debe ser 6</li> -->
-  <!-- <li>La cantidad de entradas digitales debe ser 10</li> -->
-  <!-- <li>modificar visualizacion de las columnas de datos, solo mostrar las que tienen datos, las otras ocultarlas</li> -->
-  <!-- <li>fetch guardar datos</li> -->
-  <!-- <li>crear metodo para heredar los datos de los usuarios no cargar dato constante (linea 61 app_html4.py) </li> -->
-
-  <!-- <li>Agregar funciones para crear usuario, editar usuario y borrar usuario</li> -->
-  <!-- <li>agregar al dashboar los 3 botones anteriores</li> -->
-  <li>Cuando se crea o se borra un usuario se deben crear o borrar los archvios que contienen los datos, tanto de los elementos en la matriz como la de los datos</li>
-  <!-- <li>verificar si el usuario es admin, en caso contrario no ingresar al menu Registrar</li> -->
-  <!-- <li>Limitar el tiempo que se muestran los datos en la grafica para que la grafica sea mas limpia</li> -->
-  <!-- <li>Ajustar la grafica para que se expanda a todo el ancho de la pantalla</li> -->
-  <li>Mantener encabezado de la matriz</li>
-  <!-- <li>Cambiar el punto de almacenamiento de los datos, no usar localstore, pasarlos a un txt</li> -->
-  <!-- <li>El footer en cargar csv no se queda al final de la pagina</li> -->
-  <!-- <li>Tiempos de envio y recepcion son lentos, verificar a que se debe</li> -->
- 
-
-
-
-  <li>Usuario no existente libreria toastR, libreria para notificaciones</li>
-  <!-- <li>Agregar tooltip con los nombres a los iconos de la izquierda</li> -->
-  <!-- <li>Agregar * a los campos requeridos y una nota en la parte inferior</li> -->
-  <!-- <li>cambiar la notificacion de usuario registrado a verde(success)</li> -->
-
-  <!-- <li>Quitar menu superior y poner logo en la parte superior</li> -->
-  <!-- <li>Quitar hora fecha y otros</li> -->
-  <!-- <li>Header pequeño 50px</li> -->
-  <!-- <li>Codigos ejemplo modificar tamaño botones</li> -->
-  <li>Pasar de backend al frontend las llaves de la tabla para solo mostrar las columnas existentes</li>
-  <!-- <li>simplificar timestamp,quitar milisegundos</li> -->
-  <!-- <li>Cambiar el grafico a pestañas o matriz, esto para poder verlo en la escala corrrecta</li> -->
-  <!-- <li>Variable datos_matriz corregir</li> -->
-  <!-- <li>Reset a configuracion de grafico</li> -->
-  <!-- <li>En las graficas es necesario corregir el cambio con la barra de tiempo ya que no funciona bien, dejar solo una barra de tiempo y un solo boton de reset</li> -->
-  <!-- <li>Corregir datos_matriz para filtrar solo los datos del usuario dataframe.filter(user=correntUserDeco), en java filtrar solo los datos de este usuario</li> -->
-  <!-- <li>En la seccion agregar usuario agregar la opcion de modificar</li> -->
-  <li>En la seccion agregar usuario permitir borrar varios usuarios a la vez</li>
-  <li>En la seccion agregar usuario quitar ID y agregar tipo de usuario (Administrador, Empleado, Profesor, Estudiante)</li>
-  <li>En la seccion app_html4 en register quitar ID y agregar tipo de usuario</li>
-  <!-- <li>En la seccion agregar usuario agregar boton para generar correo</li> -->
-  <li>¿Debo digitar la clave de administrador para borrar usuarios?</li>
-  <li>Para registrar usuarios administrador se debe usar la clave de administrador</li>
-
-
-</div>
 <br>
 <br>
 
@@ -874,3 +812,27 @@
 
 
 {% endblock %}
+
+
+
+
+
+<!-- Las siguientes lineas son las modificaciones pendientes del codigo -->
+ 
+<!-- <div>
+  <h2>Lista de elementos faltantes o modificaciones pendientes </h2>
+  <li>En el Dashboard falta corregir la asignacion de ID, como esta estos se pueden repetir</li>
+  <li>Modificar los script de javascript para que se carguen desde la carpeta scripts y no esten dentro del codigo.</li>
+  <li>Hay que modificar tanto la grafica como la tabla para el caso de usar menos de 4 datos, solo mostrar en la tabla la cantidad de datos usados y sin columnas de ceros.</li>
+  <li>logo nombre proyecto arriba izquierda</li>
+  <li>Cuando se crea o se borra un usuario se deben crear o borrar los archvios que contienen los datos, tanto de los elementos en la matriz como la de los datos</li>
+  <li>Mantener encabezado de la matriz</li>
+  <li>Usuario no existente libreria toastR, libreria para notificaciones</li>
+  <li>Pasar de backend al frontend las llaves de la tabla para solo mostrar las columnas existentes</li>
+  <li>En la seccion agregar usuario permitir borrar varios usuarios a la vez</li>
+  <li>En la seccion agregar usuario quitar ID y agregar tipo de usuario (Administrador, Empleado, Profesor, Estudiante)</li>
+  <li>En la seccion app_html4 en register quitar ID y agregar tipo de usuario</li>
+  <li>¿Debo digitar la clave de administrador para borrar usuarios?</li>
+  <li>Para registrar usuarios administrador se debe usar la clave de administrador</li>
+
+</div> -->

@@ -1,1 +1,0 @@
-{"slider1": "22", "slider2": "0", "slider3": "0", "Off": 1}

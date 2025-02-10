@@ -98,21 +98,6 @@
         max-width: 220px;
     }
 
-
-    /* .button-group {
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-        margin-top: 20px;
-    }
-
-    .btn {
-        width: auto;
-        min-width: 60px;
-        max-width: 220px;
-    } */
-
-
     .btn-primary {
         background-color: #007bff;
         color: #fff;
@@ -229,12 +214,6 @@
     }
 </style>
 
-<!-- <li>AL ingresar un nuevo usuario aparece el mensaje usuario no encontrado y agrega el usuario, este mensaje no deberia aparecer</li> -->
-<!-- <li>Quitar las ventanas emergentes de agregar codigo de administrador, ya hay una casilla para hacerlo </li> -->
-<li>En ocasiones aparcen mensajes en la pantlla que no deberian aparecer, es necesario limpiar este espacio, principalmente cuando se cargue la pagina</li>
-<li>Al agregar un usuario nuevo se pide la clave administrador, pero no funciona bien, se puede ingresar cualquier dato y aun asi guarda, tambien pasa al actualizar</li>
-<li>Dejar de pedir la contraseña para eliminar usuario a menos que sea administrador</li>
-<li>Agregar usuario profesor, puede agregar y eliminar estudiantes pero no administrador</li>
 
 <div class="container">
     <div class="card">
@@ -242,13 +221,16 @@
             <h2 class="card-title">Gestión de Usuarios</h2>
         </div>
         <div class="card-content">
+
+            <!-- Para mostrar los emnsajes de flask se hace lo siguiente -->
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }}">
+                    <!-- Solo mostrar el último mensaje -->
+                    {% with category, message = messages[-1] %}
+                        <div class="alert alert-{{ category }}" id="flash-message">
                             {{ message }}
                         </div>
-                    {% endfor %}
+                    {% endwith %}
                 {% endif %}
             {% endwith %}
             <form id="user-form" action="{{ url_for('register_user') }}" method="POST">
@@ -381,26 +363,13 @@
             userListDiv.style.display = 'none';
         });
 
-        // addUserButton.addEventListener('click', function() {
-        //     if (validateAddForm()) {
-        //         if(addUserButton.textContent === 'Agregar Usuario')
-        //         {
-        //             if (confirm('¿Está seguro de que desea agregar este usuario?')) {
-        //                 actionInput.value = 'Agregar Usuario';
-        //                 form.submit();
-        //                 showEmailContent();
-        //             }
-        //         }
-        //     }
-        // });
-
-
         addUserButton.addEventListener('click', function() {
             if (validateAddForm()) {
                 const userType = document.getElementById('usertype').value;
+                actionInput.value = 'Agregar Usuario';
                 if (userType === 'Administrador') {
                     const admin_key = document.getElementById('admin_key').value.trim();
-                    actionInput.value = 'Agregar Usuario';
+                    // actionInput.value = 'Agregar Usuario';
                     if (admin_key === '') {
                         alert('Para agregar o modificar un usuario administrador, debe ingresar el Código de administrador.');
                         return;
@@ -409,53 +378,65 @@
                     {
                         if (confirm('¿Está seguro de que desea agregar/actualizar este usuario?')) {
                             form.submit();
+                            form.reset();
+                            usernameInput.value = '';
+                            passwordInput.value = '';
+                            emailContentDiv.style.display = 'none';
+                            userListDiv.style.display = 'none';
                             // showEmailContent();
                             return;
                         }
                     }
                 }
-                actionInput.value = 'Agregar Usuario';
-                if (addUserButton.textContent === 'Agregar Usuario' && userType !== 'Administrador') {
+                
+                else if (addUserButton.textContent === 'Agregar Usuario' && userType !== 'Administrador') {
                     if (confirm('¿Está seguro de que desea agregar/actualizar este usuario?')) {
                         form.submit();
-                        showEmailContent();
+                        form.reset();
+                        // showEmailContent();
+                        usernameInput.value = '';
+                        passwordInput.value = '';
+                        emailContentDiv.style.display = 'none';
+                        userListDiv.style.display = 'none';
+                        return;
                     }
                 }
             }
         });
 
-        // deleteUserButton.addEventListener('click', function() {
-        //     if (validateDeleteForm()) {
-        //         if (confirm('¿Está seguro de que desea eliminar este usuario?')) {
-        //             actionInput.value = 'Eliminar Usuario';
-        //             form.submit();
-        //         }
-        //     }
-        // });
-
-
         // Función para eliminar un usuario
-        function deleteUser(username) {
-            // const admin_key = prompt("Ingrese la clave de administrador:");
-            const admin_key = document.getElementById('admin_key');
-            if (admin_key) {
-                // Usar el formulario existente para enviar la solicitud de eliminación
-                const form = document.getElementById('user-form');
-                const actionInput = document.getElementById('action');
-                const usernameInput = document.getElementById('username');
-                // const adminKeyInput = document.getElementById('admin_key');
-
-                usernameInput.value = username;
-                // adminKeyInput.value = admin_key;
-                actionInput.value = 'Eliminar Usuario';
+        async function deleteUser(username) {
+            try {
+                // Primero obtener el tipo de usuario
+                const response = await fetch(`/buscar_usuario/${username}`);
+                const usuario = await response.json();
+                
+                if (usuario.usertype === 'Administrador') {
+                    const admin_key = document.getElementById('admin_key').value.trim();
+                    if (!admin_key) {
+                        alert('Para eliminar un usuario administrador, debe ingresar el Código de administrador.');
+                        return;
+                    }
+                }
 
                 if (confirm(`¿Está seguro de que desea eliminar el usuario ${username}?`)) {
-                    form.submit();
+                    const form = document.getElementById('user-form');
+                    const actionInput = document.getElementById('action');
+                    const usernameInput = document.getElementById('username');
+                    
+                    usernameInput.value = username;
+                    actionInput.value = 'Eliminar Usuario';
+                    
+                    form.submit(); // Enviar el formulario de manera tradicional
+                    
+                    // Esperar un momento y actualizar la tabla
+                    setTimeout(() => {
+                        actualizarTablaUsuarios();
+                    }, 1000);
                 }
-            }
-            else
-            {
-                alert('Por favor, ingrese el código de administrador para eliminar un usuario.');
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al procesar la solicitud. Por favor, intente de nuevo.');
             }
         }
         // Función para editar un usuario
@@ -496,6 +477,10 @@
 
         // Funcion para mostrar los usuarios en una tabla
         showUsersButton.addEventListener('click', function() {
+            actualizarTablaUsuarios();
+        });
+            
+        function actualizarTablaUsuarios() {    
             fetch('/obtener_usuarios')
                 .then(response => response.json())
                 .then(data => {
@@ -530,20 +515,6 @@
                         userListDiv.innerHTML = tableHTML;
                         userListDiv.style.display = 'block';
 
-                        // // Agregar event listeners para los botones de borrar y editar
-                        // document.querySelectorAll('.delete-user').forEach(button => {
-                        //     button.addEventListener('click', function() {
-                        //         const username = this.getAttribute('data-username');
-                        //         deleteUser(username);
-                        //         // if (confirm(`¿Está seguro de que desea eliminar el usuario ${username}?`)) {
-                        //         //     deleteUser(username);
-                        //         // }
-                        //     });
-                        // });
-
-
-
-
                         function verificarAdminKey(callback) {
                             const admin_key = document.getElementById('admin_key').value.trim();
                             if (admin_key === '') {
@@ -559,6 +530,7 @@
                                 verificarAdminKey(() => {
                                     // if (confirm(`¿Está seguro de que desea eliminar el usuario ${username}?`)) {
                                         deleteUser(username);
+                                        usernameInput.value = '';
                                     // }
                                 });
                             });
@@ -576,7 +548,7 @@
                     console.error("Error:", error);
                     alert("Error al obtener los usuarios. Por favor, intente de nuevo más tarde.");
                 });
-        });
+        }
 
         // Función para validar que se ingresaron los datos necesarios para agregar usuario
         function validateAddForm() {
@@ -590,14 +562,6 @@
             }
             return true;
         }
-
-        // function validateDeleteForm() {
-        //     if (!emailInput.value || !document.getElementById('admin_key').value) {
-        //         alert('Para eliminar un usuario debe ingresar correo electrónico y la clave de administrador.');
-        //         return false;
-        //     }
-        //     return true;
-        // }
 
         // Función para generar el contenido del correo electrónico
         async function showEmailContent() {
@@ -617,7 +581,7 @@
                 Le damos la bienvenida a Device IoT Eafit. 
                 
                 Para ingresar a la plataforma lo puede hacer por medio del siguiente enlace: 
-                https://device-iot-eafit.com/
+                https://deviceiot.dis.eafit.edu.co/login
 
                 A continuación, encontrará sus credenciales de acceso:
 
@@ -650,12 +614,19 @@
         } else {
             // console.error('El botón Generar Correo no se encontró en el DOM');
         }
-
-        // Do not clear form fields on page load
-        // form.reset();
-        // usernameInput.value = '';
-        // passwordInput.value = '';
     });
 </script>
 
 {% endblock %}
+
+
+
+
+<!-- Las siguientes lineas son las modificaciones pendientes del codigo -->
+
+<!-- 
+
+    En ocasiones aparcen mensajes en la pantalla que no deberian aparecer, es necesario limpiar este espacio, principalmente cuando se cargue la pagina
+    En el momento no esta mostrando los mensajes de usuario repetido o clave equivocada
+
+-->

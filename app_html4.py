@@ -15,7 +15,6 @@ import base64
 app = Flask(__name__)
 
 datos = [] #Variable usada para almacenar los datos json
-# datos_GTM5 = [] ##Variable usada para almacenar los datos json en formato GTM-5
 datos_matriz = []
 
 ADMIN_KEY = '1234'  # Clave para agregar admnistrador o borrar usuarios
@@ -36,10 +35,6 @@ password = ""
 # Diccionario global para almacenar los datos de cada usuario por separado
 usuarios_datos = {}
 
-
-# usernamePage11 = ""
-# passwordPage11 = ""
-
 # Filtro para eliminar la extensión del archivo en las plantillas de codigo
 @app.template_filter('without_extension')
 def without_extension(file_name):
@@ -51,11 +46,9 @@ def cargar_usuarios():
     with open('static/Datos/users.txt', 'r') as file:
         for line in file:
             user_id, usertype, username, password, name, lastname, email, phone, career, document = line.strip().split(',')
-            print(f"user_id: {user_id}, usertype: {usertype}, username: {username}, password: {password}")
             usuarios.append(User(int(user_id), usertype, username, password))  # Convertir user_id a entero
     return usuarios
 
-# Decorador @admin_required
 # Verifica el atributo usertype en lugar de id:
 def admin_required(f):
     @wraps(f)
@@ -65,10 +58,6 @@ def admin_required(f):
             return redirect(url_for('home'))
         return f(*args, **kwargs)
     return decorated_function
-
-
-
-# Simulación de una base de datos de usuarios
 class User(UserMixin):
     def __init__(self, user_id, usertype, username, password):
         self.id = user_id  # Identificador único (Flask-Login usa esto)
@@ -88,9 +77,6 @@ class User(UserMixin):
     def __repr__(self):
         return f"User(id={self.id}, usertype={self.usertype}, username={self.username})"
 
-# Lista de usuarios registrados
-# users22 = [User(1, 'Alex', 'alex1'), User(2, 'usuario2', 'contraseña2')]
-
 # Cargar usuarios desde el archivo
 users = cargar_usuarios()
 
@@ -103,7 +89,6 @@ def load_user_from_header(request): # Función para cargar el usuario desde la c
     user = User.verify_auth(auth.username, auth.password)
     username = auth.username
     password = auth.password
-    # print("username: ", username, "  password: ", password, "00000000000000000000000000000000000000000000")
     if not user:
         abort(401)
     return user
@@ -117,14 +102,9 @@ def load_user(user_id):  # Flask-Login pasa `user_id`
         passwordPage = usuario.password
     return usuario
 
-
 @login_manager.request_loader
 def load_user_from_header(request):
-    # global usernamePage11, passwordPage11
     auth = request.authorization
-    # usernamePage11 = auth.username
-    # passwordPage11 = auth.password
-    # print("usernamePage: ", usernamePage11, "  passwordPage: ", passwordPage11, "333333333333333333333333333333333333333333")
     if not auth:
         return None
     user = User.verify_auth(auth.username, auth.password)
@@ -168,21 +148,22 @@ def register_user():
         career = request.form['career']
         document = request.form['document']
         admin_key = request.form['admin_key']
-
         action = request.form['action']
         
         if action == 'Agregar Usuario':
-            if admin_key != ADMIN_KEY:
-                flash('Clave de administrador incorrecta.', 'danger')
-                return redirect(url_for('register_user'))
-            # Verificar si el usuario ya existe
+            if usertype == 'Administrador':
+                if admin_key != ADMIN_KEY:
+                    flash('Clave de administrador incorrecta.', 'danger')
+                    return '', 204  # Retorna respuesta vacía con código 204 (No Content)
+            else:
+                print("usertype: ", usertype)
+
             user_exists = any(user.username == username for user in users)
             
             if user_exists:
                 flash('El nombre de usuario ya existe. Por favor elija otro.', 'danger')
-                return redirect(url_for('register_user'))
+                return '', 204
             
-            # Si el usuario no existe, proceder con la creación
             user_id = max(user.id for user in users) + 1
             new_user = User(user_id, usertype, username, password)
             users.append(new_user)
@@ -191,45 +172,45 @@ def register_user():
                 file.write(f'{user_id},{usertype},{username},{password},{firstname},{lastname},{email},{phone},{career},{document}\n')
 
             flash('Usuario registrado exitosamente.', 'success')
-            # return redirect(url_for('register_user'))
+            return redirect(url_for('register_user'))
+            # return '', 204
 
         if action == 'Actualizar Usuario':
-            if admin_key != ADMIN_KEY:
-                flash('Clave de administrador incorrecta.', 'danger')
-                return redirect(url_for('register_user'))
-            # Buscar y actualizar el usuario existente
+            if usertype == 'Administrador':
+                if admin_key != ADMIN_KEY:
+                    flash('Clave de administrador incorrecta.', 'danger')
+                    return '', 204  # Retorna respuesta vacía con código 204 (No Content)
+            else:
+                print("usertype: ", usertype)
+                
             user_to_update = next((user for user in users if user.username == username), None)
             
             if user_to_update:
-                # Leer todos los usuarios del archivo
                 with open('static/Datos/users.txt', 'r') as file:
                     lines = file.readlines()
 
-                # Reescribir el archivo con los datos actualizados
                 with open('static/Datos/users.txt', 'w') as file:
                     for line in lines:
                         user_data = line.strip().split(',')
-                        if user_data[2] == username:  # Coincide el nombre de usuario
-                            # Reemplazar la línea con los nuevos datos
+                        if user_data[2] == username:
                             updated_line = f'{user_data[0]},{usertype},{username},{password},{firstname},{lastname},{email},{phone},{career},{document}\n'
                             file.write(updated_line)
                         else:
                             file.write(line)
 
-                # Actualizar el usuario en la lista de usuarios en memoria
                 user_to_update.usertype = usertype
                 user_to_update.password = password
 
                 flash('Usuario actualizado exitosamente.', 'success')
             else:
                 flash('Usuario no encontrado.', 'danger')
-
-            # return redirect(url_for('register_user'))
+            return redirect(url_for('register_user'))
+            # return '', 204
 
         if action == 'Eliminar Usuario':
             if admin_key != ADMIN_KEY:
                 flash('Clave de administrador incorrecta.', 'danger')
-                return redirect(url_for('register_user'))
+                return '', 204
             
             user_to_delete = next((user for user in users if user.username == username), None)
             if user_to_delete:
@@ -242,17 +223,26 @@ def register_user():
                     for line in lines:
                         if not line.startswith(f'{user_to_delete.id},'):
                             file.write(line)
-                
+
+                            # Eliminar archivos relacionados
+                            archivos = [
+                                f'static/Datos/{username}_Data.txt',
+                                f'static/Datos/{username}_DatosTemp.txt'
+                            ]                          
+                            for archivo in archivos:
+                                try:
+                                    if os.path.exists(archivo):
+                                        os.remove(archivo)
+                                except Exception as e:
+                                    print(f"Error al eliminar el archivo {archivo}: {str(e)}")
                 flash('Usuario eliminado exitosamente.', 'success')
             else:
                 flash('Usuario no encontrado.', 'danger')
 
-            return redirect(url_for('register_user'))
-    
-    return render_template('usuarios.html')
+            return '', 204
+    return render_template('usuarios.html')  # Solo para GET requests
 
-
-# Eta función se usa para buscar un usuario por su nombre de usuario y mostrar sus datos en
+# Esta función se usa para buscar un usuario por su nombre de usuario y mostrar sus datos en
 # el contenido para el correo.
 @app.route('/buscar_usuario/<username>', methods=['GET'])
 def buscar_usuario(username):
@@ -284,27 +274,22 @@ def buscar_usuario(username):
         return jsonify({'error': f'Error al buscar usuario: {str(e)}'}), 500
 
 # Ejemplo de cómo usar esta función en una ruta Flask
-@app.route('/buscar_usuario/<username>', methods=['GET'])
-def obtener_usuario(username):
-    return buscar_usuario(username)
-
-
+# @app.route('/buscar_usuario/<username>', methods=['GET'])
+# def obtener_usuario(username):
+#     return buscar_usuario(username)
 
 # obtener los datos de los usuarios
 @app.route('/obtener_usuarios', methods=['GET'])
 def obtener_usuarios():
-    
     try:
-        # Asumiendo que tienes los usuarios almacenados en un archivo o base de datos
+        # Se tienen los usuarios almacenados en un archivo
         with open('static/Datos/users.txt', 'r') as file:
-            usuarios = file.readlines()  # Si los usuarios están en un archivo
-            # Supongamos que cada usuario está en una línea y separado por comas
+            usuarios = file.readlines() 
+            # Separa los datos de los usuarios en una lista
             usuarios = [usuario.strip().split(',') for usuario in usuarios]
-            # print("obtener_usuarios-----------------------------------", usuarios)
             return jsonify(usuarios=usuarios)
     except Exception as e:
         return jsonify({'error': str(e)})
-
 
 # Antes de agregar un usuario nuevo se verifica que el usuario no exista
 @app.route('/agregar_usuario', methods=['POST'])
@@ -326,14 +311,6 @@ def agregar_usuario():
     
     return jsonify({'existe': False, 'mensaje': 'Usuario agregado correctamente.'})
 
-                    
-
-
-
-
-
-
-
 new_date = datetime.utcnow()
 # Cambiar el formato de hora utc a gtn-5
 new_date = new_date + timedelta(hours=-5)
@@ -346,34 +323,7 @@ data2 = [
     [tiemp, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 ]
 
-# Para conectar con openweathermap reemplaza 'TU_API_KEY' con tu propia clave de OpenWeatherMap
-API_KEY = 'a7e7b9c68069dacd8d13a60430a9d6ab'
-
-def get_weather_data(city_name):
-    base_url = f'http://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={API_KEY}'
-    response = requests.get(base_url)
-    dataTH = response.json()
-    temperature = dataTH['main']['temp']-273.15
-    temperature = "{:.2f}".format(temperature)
-    humidity = dataTH['main']['humidity']
-    return temperature, humidity
-
-@app.route('/actualizar_datos')
-def obtener_datos_actualizados():
-    now = datetime.now()
-    city = 'Medellín,CO'  # Reemplaza con la ciudad de tu elección
-    temperature, humidity = get_weather_data(city)
-    data22 = {
-        'fecha_hora': {
-            'fecha': now.strftime("%Y-%m-%d") ,
-            'hora': now.strftime("%H:%M:%S")
-        },
-        'temperatura': temperature,
-        'humedad': humidity
-    }
-    return data22
-
-# Prueba generador de codigo para arduino
+# Abre el generador de codigo para arduino
 @app.route("/generador")
 @login_required
 def generador():
@@ -388,9 +338,7 @@ def home():
     current_date = now.strftime("%Y-%m-%d")
     current_time = now.strftime("%H:%M:%S")
     city = 'Medellín,CO'  # Reemplaza con la ciudad de tu elección
-    temperature, humidity = get_weather_data(city)
-    return render_template("account4.html", data=data,current_date=current_date,current_time=current_time, temperature=temperature, humidity=humidity)
-    # return render_template("account4.html",current_date=current_date,current_time=current_time, temperature=temperature, humidity=humidity)
+    return render_template("account4.html", data=data,current_date=current_date,current_time=current_time)
 
 @app.route('/', methods=['GET'])
 @login_required
@@ -412,30 +360,6 @@ def profile2():
 
     if not(userVal) is None:
         return redirect (url_for("user1"))
-    
-#Metodo DELETE usado para borrar una linea de elementos
-# @app.route('/usuario/eliminar', methods=['POST'])
-# @login_required
-# def borrar_datos():
-#     global data
-#     datoEliminar = None
-
-#     timeDelete = request.form["time_delete"]
-#     formatoTime = "%Y-%m-%d %H:%M:%S"
-#     timeDelete2 = datetime.strptime(timeDelete, formatoTime)
-#     print(data)
-#     for k in range(len(data)):
-#         tiempo = datetime.strptime(data[k][0], formatoTime)
-#         if tiempo == timeDelete2:
-#             datoEliminar = data[k]
-#             print("Se encontro dato para eliminar....................",datoEliminar)
-#             break
-   
-#     if datoEliminar:
-#         data.remove(datoEliminar)
-#         return jsonify({"mensaje": f"Tiempo {timeDelete2} borrado"}), 404
-#     else:
-#         return jsonify({"mensaje": f"Tiempo {timeDelete2} no encontrado"}), 404
     
 #Metodo PUT usado para actualizar una linea de elementos
 @app.route('/usuario/actualizar', methods=['POST'])
@@ -459,56 +383,6 @@ def actualizar_datos():
         return jsonify({"mensaje": f"Tiempo {timeOld2} modificado a {timeNew2}"}), 200
     else:
         return jsonify({"mensaje": f"Tiempo {timeOld2} no encontrado"}), 404
-    
-@app.route("/usuario/editar", methods=['GET'])
-@login_required
-def change():
-    global userVal #, datos #, datos_GTM5
-    # datos_GTM5 = datos
-    # userVal = userVal2
-    temp = 0
-    hum = 0
-    tiempo = 0
-    datos2 = []
-    for dato in datos:
-        temp = dato['temperatura']
-        hum = dato['humedad']
-        tiempo = dato['time']
-        horaGmt5 = tiempo + timedelta(hours=-5)
-        datos2.append(
-            {
-            'temperatura': temp,
-            'humedad': hum,
-            'horaGmt5': horaGmt5
-            }
-        )
-    return render_template('account4.1.html', datos=data, name = userVal, temperatu=temp, humed = hum, tiemp = tiempo)
-
-# @app.route("/convertir-datos", methods=['POST', 'GET'])
-# @login_required
-# def convertir_datos():
-#     global userVal #, datos_GTM5
-#     # datos_GTM5 = datos
-#     # userVal = userVal2
-    
-#     datos2 = []
-#     for k in range(len(data)):
-        
-#         temp = data[k][1]
-#         hum = data[k][2]
-#         tiempo = data[k][0]
-#         formatoTime = "%Y-%m-%d %H:%M:%S"
-#         tiempo = datetime.strptime(tiempo, formatoTime)
-#         horaGmt5 = tiempo + timedelta(hours=-5)
-#         data2.append(
-#             [
-#                 horaGmt5,
-#                 temp,
-#                 hum,
-#             ]
-#         ) 
-
-#     return render_template('account4.1.html', datos2=data2, name = userVal)
 
 @app.route("/data", methods=['GET', 'POST'])
 @login_required
@@ -586,13 +460,10 @@ def get_post_data():
             file.write(str(user_data))
 
         # Enviar los datos solo al usuario autenticado
-        # print("username_deco: ", username_deco,"  datos_matriz:  ", datos_matriz, "11111111111111111111111111111111111111111111111111111111111111111")
         if current_user.username == username_deco:
-            # return jsonify({"datos_matriz": datos_matriz})
             usuario_id = current_user.username
             # Crear el nombre del archivo con el nombre del usuario
             filename = f'static/Datos/{usuario_id}_DatosTemp.txt'
-
             try:
                 # Leer los datos del archivo
                 with open(filename, 'r') as f:
@@ -600,14 +471,9 @@ def get_post_data():
                     elementos = json.loads(elementos)
             except FileNotFoundError:
                 elementos = '[11111111]'  # Retorna una lista vacía si el archivo no existe
-            print("elementos:                            ", elementos, "  ----------------------------------")
-            # print("Datos 2222","usuario_id: ", usuario_id, "  Datos: ", usuarios_datos[usuario_id], "  ++++++++++++++++++++++++++++++")
-            # return jsonify("usuarios_datos[usuario_id]: ", usuarios_datos[usuario_id])
             return jsonify("usuarios_datos[usuario_id]: ", elementos)
-            
         # return jsonify({"message": "Datos recibidos correctamente"}), 200
         return ('', 204)
-
     # Si es GET, leer todos los datos del archivo del usuario
     file_name = f"{current_user.username}_Data.txt"
     file_path = os.path.join("static/Datos/", file_name)
@@ -620,7 +486,6 @@ def get_post_data():
                     data = []
             except Exception as e:
                 print(f"Error al leer el archivoooooo: {e}")
-                # data = []
     else:
         data = []
     if data:
@@ -632,19 +497,19 @@ def get_post_data():
 
 
 
-def get_data(url):
-    headers={"Accept":"application/json"}
-    response = requests.get(url, headers=headers)
-    return response.json()
+# def get_data(url):
+#     headers={"Accept":"application/json"}
+#     response = requests.get(url, headers=headers)
+#     return response.json()
 
-@app.route("/save_data", methods=['GET', 'POST'])
-@login_required
-def save_data():
-    data = get_data(URL + "/data")
-    df=pd.DataFrame(data)
-    df=df.rename(columns={0:"timestamp",1:"Temperatura",2:"Humedad",3:"input_1",4:"input_2"   }).set_index("timestamp")
-    df.to_csv(ARCHIVO)
-    return send_file(ARCHIVO, as_attachment=True, download_name='datos.csv', mimetype='text/csv')
+# @app.route("/save_data", methods=['GET', 'POST'])
+# @login_required
+# def save_data():
+#     data = get_data(URL + "/data")
+#     df=pd.DataFrame(data)
+#     df=df.rename(columns={0:"timestamp",1:"Temperatura",2:"Humedad",3:"input_1",4:"input_2"   }).set_index("timestamp")
+#     df.to_csv(ARCHIVO)
+#     return send_file(ARCHIVO, as_attachment=True, download_name='datos.csv', mimetype='text/csv')
 
 # La siguiente funcion se usa para cargar los datos desde un archivo csv
 @app.route("/load_data", methods=['GET', 'POST'])
@@ -695,10 +560,6 @@ def load_data():
             row['dg9'],
             row['dg10'],
         ], axis=1).tolist()
-        
-        # Actualizar los datos globales
-        # global data
-        # data = json_data
 
     except Exception as e:
         error_message = "Error al procesar el archivo, verifique la extensión y su contenido."
@@ -727,12 +588,9 @@ def guardar_estado_botones():
 
     # Obtener el ID del usuario autenticado y almaceenar en la variable usuario_id
     usuario_id = current_user.username
-    # print("usuario_id: ", usuario_id, "  ++++++++++++++++++++++++++++++")
 
     # Guardar los datos en el diccionario usando el ID del usuario como clave
     usuarios_datos[usuario_id] = datos_matriz
-
-
 
     # Obtener el nombre de usuario actual
     username = current_user.username
@@ -744,10 +602,6 @@ def guardar_estado_botones():
     with open(f'static/Datos/{filename}', 'w') as f:
         f.write(datos_matriz)
 
-
-
-    # redi.set(usuario_id, json.dumps(request.get_json()))
-
     # Retornar los datos almacenados para este usuario
     return jsonify(usuarios_datos[usuario_id])
 
@@ -757,8 +611,6 @@ def guardar_estado_botones():
 @app.route('/borrar_datos', methods=['POST'])
 @login_required
 def borrar_datos2():
-    # global data
-    
     # Limpiar la variable de datos en memoria
     data = []  # Borra los datos almacenados en la lista
 
